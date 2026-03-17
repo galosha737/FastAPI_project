@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 # Строка подключения
-SQLALCHEMY_DATABASE_URL = "sqlite:///...../fastapiDB.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./database.db"
 # Создание движка (в аргументе разрешаем многопоточность)
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
