@@ -1,8 +1,7 @@
 from src.infrastructure.sqlite.database import Base
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models.mixin_m import PubAndCreate
-from src.models.post_m import Post
 from typing import List
 
 
@@ -11,4 +10,5 @@ class Location(Base, PubAndCreate):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
-    posts: Mapped[List["Post"]] = relationship(back_populates="location")
+    is_published: Mapped[bool] = mapped_column(Boolean)
+    posts: Mapped[List["Post"]] = relationship("Post", back_populates="location")

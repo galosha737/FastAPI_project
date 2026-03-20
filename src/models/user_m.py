@@ -1,8 +1,6 @@
 from src.infrastructure.sqlite.database import Base
-from sqlalchemy import Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy import Integer, String, Text, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.models.post_m import Post
-from src.models.comment_m import Comment
 from typing import List
 from datetime import datetime
 
@@ -21,10 +19,12 @@ class User(Base):
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     date_joined: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     posts: Mapped[List["Post"]] = relationship(
+        "Post",
         back_populates="author",
         cascade="all, delete-orphan"
     )
     comments: Mapped[List["Comment"]] = relationship(
+        "Comment",
         back_populates="author",
         cascade="all, delete-orphan"
     )

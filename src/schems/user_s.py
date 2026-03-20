@@ -8,12 +8,12 @@ class UserUpdate(BaseModel):
     email: EmailStr = Field()
 
 class UserCreate(UserUpdate):
-    nickname: str
+    username: str
     password: str
 
 class UserOut(UserUpdate):
     id: int
-    nickname: str
+    username: str
     active: bool
     date_joined: datetime
     model_config = ConfigDict(from_attributes=True)

@@ -10,7 +10,7 @@ from .comment_s import CommentOut
 class PostUpdate(BaseModel):
     title: str = Field(default=None)
     text: str = Field(default=None)
-    pub_date: datetime = Field(default=None)
+    created_at: datetime = Field(default=None)
     is_published: bool = Field(default=None)
     image: str = Field(default=None)
     location_id: int = Field(default=None)

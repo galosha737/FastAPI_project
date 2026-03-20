@@ -2,8 +2,7 @@ from datetime import datetime
 from src.infrastructure.sqlite.database import Base
 from sqlalchemy import Integer, ForeignKey, Text, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.models.post_m import Post
-from src.models.user_m import User
+
 
 class Comment(Base):
     __tablename__ = "comments"
@@ -17,5 +16,5 @@ class Comment(Base):
     )
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     post_id: Mapped[int] = mapped_column(ForeignKey("posts.id"))
-    author: Mapped["User"] = relationship(back_populates="comments")
-    post: Mapped["Post"] = relationship(back_populates="comments")
+    author: Mapped["User"] = relationship("User", back_populates="comments")
+    post: Mapped["Post"] = relationship("Post", back_populates="comments")
