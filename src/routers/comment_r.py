@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from starlette import status
-from src.infrastructure.sqlite.database import get_db
-from src.repositories.comment_rep import CommentRepository
-from src.schems.comment_s import CommentUpdate, CommentCreate, CommentOut
+from ..infrastructure.sqlite.database import get_db
+from ..repositories.comment_rep import CommentRepository
+from ..schems.comment_s import CommentUpdate, CommentCreate, CommentOut
 
 
 router = APIRouter(prefix='/comments', tags=['Комментарий'])

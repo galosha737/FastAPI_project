@@ -1,5 +1,5 @@
+from ..database import Base
 from datetime import datetime
-from src.infrastructure.sqlite.database import Base
 from sqlalchemy import Integer, ForeignKey, Text, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

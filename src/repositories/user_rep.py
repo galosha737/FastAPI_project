@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from src.models.user_m import User
-from src.schems.user_s import UserCreate, UserUpdate
+from ..infrastructure.sqlite.models import User
+from ..schems.user_s import UserCreate, UserUpdate
 from typing import List, Optional
 
 
@@ -16,7 +16,8 @@ class UserRepository:
         return self.session.get(User, user_id)
 
     def create(self, data: UserCreate) -> User:
-        user = User(**data.model_dump()) # type: ignore
+        # mode="json" для SecretStr
+        user = User(**data.model_dump(mode="json"))
         self.session.add(user)
         self.session.commit()
         self.session.refresh(user)

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from src.models.category_m import Category
-from src.schems.category_s import CategoryUpdateAndCreate
+from ..infrastructure.sqlite.models import Category
+from ..schems.category_s import CategoryUpdateAndCreate
 from typing import List, Optional
 
 

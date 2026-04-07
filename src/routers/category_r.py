@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from starlette import status
-from src.infrastructure.sqlite.database import get_db
-from src.repositories.category_rep import CategoryRepository
-from src.schems.category_s import CategoryUpdateAndCreate, CategoryOut
+from ..infrastructure.sqlite.database import get_db
+from ..repositories.category_rep import CategoryRepository
+from ..schems.category_s import CategoryUpdateAndCreate, CategoryOut
 
 
 router = APIRouter(prefix='/category', tags=['Категория'])

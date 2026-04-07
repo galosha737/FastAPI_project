@@ -1,4 +1,4 @@
-from src.infrastructure.sqlite.database import Base
+from ..database import Base
 from sqlalchemy import Integer, String, Text, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List

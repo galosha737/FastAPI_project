@@ -1,7 +1,7 @@
-from src.infrastructure.sqlite.database import Base
+from ..database import Base
 from sqlalchemy import Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.models.mixin_m import PubAndCreate
+from .mixin_m import PubAndCreate
 from typing import Optional, List
 
 

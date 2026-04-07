@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from src.models.location_m import Location
-from src.schems.location_s import LocationUpdateAndCreate
+from ..infrastructure.sqlite.models import Location
+from ..schems.location_s import LocationUpdateAndCreate
 from typing import List, Optional
 
 

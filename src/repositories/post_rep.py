@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from src.models.post_m import Post
-from src.schems.post_s import PostCreate, PostUpdate
+from ..infrastructure.sqlite.models import Post
+from ..schems.post_s import PostCreate, PostUpdate
 from typing import List, Optional
 
 

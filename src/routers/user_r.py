@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from starlette import status
-from src.infrastructure.sqlite.database import get_db
-from src.repositories.user_rep import UserRepository
-from src.schems.user_s import UserUpdate, UserCreate, UserOut
+from ..infrastructure.sqlite.database import get_db
+from ..repositories.user_rep import UserRepository
+from ..schems.user_s import UserUpdate, UserCreate, UserOut
 
 
 router = APIRouter(prefix='/users', tags=['Пользователь'])

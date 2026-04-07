@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from src.models.comment_m import Comment
-from src.schems.comment_s import CommentCreate, CommentUpdate
+from ..infrastructure.sqlite.models.comment_m import Comment
+from ..schems.comment_s import CommentCreate, CommentUpdate
 from typing import List, Optional
 
 class CommentRepository:

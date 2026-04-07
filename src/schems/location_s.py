@@ -1,10 +1,10 @@
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
-
+from typing import Annotated
 
 class LocationUpdateAndCreate(BaseModel):
-    name: str = Field(default=None)
-    is_published: bool = Field(default=None)
+    name: Annotated[str, Field(min_length=1)]
+    is_published: Annotated[bool, Field(default=False)]
 
 class LocationOut(LocationUpdateAndCreate):
     id: int
