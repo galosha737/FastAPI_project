@@ -1,8 +1,8 @@
-from sqlalchemy import Integer, String, Text, Boolean
+from sqlalchemy import Boolean, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .mixin_m import PubAndCreate
 from ..database import Base
+from .mixin_m import PubAndCreate
 
 
 class Category(Base, PubAndCreate):

@@ -24,3 +24,34 @@ packages = [{include = "src"}]
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.15.13,<0.16.0)"
+]
+
+[tool.ruff]
+line-length = 80  # Максимальная длина строки
+target-version = "py314"  # Твоя версия Python
+fix = true  # Автоисправление при --fix
+unsafe-fixes = false  # Не применять небезопасные фиксы автоматически
+
+# Исключить папки
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "alembic/versions",
+    ".pytest_cache",
+]
+
+[tool.ruff.lint]
+# Включить правила (E, F — базовые из Flake8, I — isort, B — bugbear, UP — pyupgrade)
+select = ["E", "F", "I", "B", "UP", "S", "RUF"]
+ignore = [
+    "E501",  # Длина строки (Ruff format уже контролирует)
+]
+
+[tool.ruff.format]
+quote-style = "double"  # Двойные кавычки
+indent-style = "space"  # Отступы пробелами

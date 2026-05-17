@@ -1,8 +1,8 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.location_m import Location
 from ....schems.location_s import LocationUpdateAndCreate
+from ..models.location_m import Location
 
 
 class LocationRepository:

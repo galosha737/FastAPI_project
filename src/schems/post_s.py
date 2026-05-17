@@ -1,11 +1,12 @@
-from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
-from typing import List, Annotated
+from typing import Annotated
 
-from .user_s import UserOut
+from pydantic import BaseModel, ConfigDict, Field
+
 from .category_s import CategoryOut
-from .location_s import LocationOut
 from .comment_s import CommentOut
+from .location_s import LocationOut
+from .user_s import UserOut
 
 
 class PostUpdate(BaseModel):
@@ -31,4 +32,4 @@ class PostDetail(PostOut):
     author: Annotated[UserOut, Field(...)]
     category: Annotated[CategoryOut | None, Field(default=None)]
     location: Annotated[LocationOut | None, Field(default=None)]
-    comments: Annotated[List[CommentOut], Field(default_factory=list)]
+    comments: Annotated[list[CommentOut], Field(default_factory=list)]

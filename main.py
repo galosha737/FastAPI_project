@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 
-from src.routers import location_r, category_r, user_r, comment_r, post_r
-
+from src.routers import category_r, comment_r, location_r, post_r, user_r
 
 app = FastAPI()
 

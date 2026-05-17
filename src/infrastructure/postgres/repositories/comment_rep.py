@@ -1,8 +1,8 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from ....schems.comment_s import CommentCreate, CommentUpdate
 from ..models.comment_m import Comment
-from ....schems.comment_s import CommentUpdate, CommentCreate
 
 
 class CommentRepository:

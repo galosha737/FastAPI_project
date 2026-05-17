@@ -1,6 +1,7 @@
-from sqlalchemy import Integer, String, Text, Boolean, DateTime
+from datetime import UTC, datetime
+
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import datetime, timezone
 
 from ..database import Base
 
@@ -16,7 +17,7 @@ class User(Base):
     bio_info: Mapped[str | None] = mapped_column(Text, nullable=True)
     password: Mapped[str] = mapped_column(String, nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
-    date_joined: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    date_joined: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     posts: Mapped[list["Post"]] = relationship(
         "Post",
         back_populates="author",

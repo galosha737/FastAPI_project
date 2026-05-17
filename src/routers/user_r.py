@@ -1,19 +1,24 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from ..infrastructure.postgres.database import get_db
 from ..infrastructure.postgres.repositories.user_rep import UserRepository
-from ..schems.user_s import UserUpdate, UserCreate, UserOut
-
+from ..schems.user_s import UserCreate, UserOut, UserUpdate
 
 router = APIRouter(prefix='/users', tags=['Пользователи'])
 
+# в DbSession кладем AsyncSession, которую берем из get_db
+DbSession = Annotated[AsyncSession, Depends(get_db)]
 
-def get_user_repository(
-        session: AsyncSession = Depends(get_db)
-        ) -> UserRepository:
+
+def get_user_repository(session: DbSession) -> UserRepository:
     return UserRepository(session)
+
+
+UserRepositoryDep = Annotated[UserRepository, Depends(get_user_repository)]
 
 
 @router.get(
@@ -23,9 +28,9 @@ def get_user_repository(
     summary="Пользователи:"
 )
 async def get_users(
+    repository: UserRepositoryDep,
     skip: int = 0,
     limit: int = 10,
-    repository: UserRepository = Depends(get_user_repository),
 ):
     return await repository.get_list(skip=skip, limit=limit)
 
@@ -37,8 +42,8 @@ async def get_users(
     summary="Пользователь:"
 )
 async def get_user(
+    repository: UserRepositoryDep,
     user_id: int,
-    repository: UserRepository = Depends(get_user_repository),
 ):
     user = await repository.get(user_id)
     if not user:
@@ -53,8 +58,8 @@ async def get_user(
     summary="Создать пользователя:"
 )
 async def create_user(
-        user_in: UserCreate,
-        repository: UserRepository = Depends(get_user_repository),
+    repository: UserRepositoryDep,
+    user_in: UserCreate,
 ):
     return await repository.create(user_in)
 
@@ -66,9 +71,9 @@ async def create_user(
     summary="Обновить пользователя:"
 )
 async def update_user(
+    repository: UserRepositoryDep,
     user_id: int,
     user_in: UserUpdate,
-    repository: UserRepository = Depends(get_user_repository),
 ):
     user = await repository.update(user_id, user_in)
     if not user:
@@ -82,8 +87,8 @@ async def update_user(
     summary="Удалить пользователя:"
 )
 async def delete_user(
+    repository: UserRepositoryDep,
     user_id: int,
-    repository: UserRepository = Depends(get_user_repository),
 ):
     user = await repository.delete(user_id)
     if not user:

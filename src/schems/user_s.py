@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field, EmailStr, ConfigDict, SecretStr
 from datetime import datetime
 from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr
 
 
 class UserUpdate(BaseModel):

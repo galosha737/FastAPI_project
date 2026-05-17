@@ -1,8 +1,8 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from ....schems.post_s import PostCreate, PostUpdate
 from ..models.post_m import Post
-from ....schems.post_s import PostUpdate, PostCreate
 
 
 class PostRepository:

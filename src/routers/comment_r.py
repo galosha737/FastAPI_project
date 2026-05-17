@@ -1,20 +1,25 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from ..infrastructure.postgres.database import get_db
-from ..infrastructure.postgres.repositories.comment_rep import (
-    CommentRepository)
-from ..schems.comment_s import CommentUpdate, CommentCreate, CommentOut
-
+from ..infrastructure.postgres.repositories.comment_rep import CommentRepository
+from ..schems.comment_s import CommentCreate, CommentOut, CommentUpdate
 
 router = APIRouter(prefix='/comments', tags=['Комментарий'])
 
 
-def get_comment_repository(
-        session: AsyncSession = Depends(get_db)
-        ) -> CommentRepository:
+DbSession = Annotated[AsyncSession, Depends(get_db)]
+
+
+def get_comment_repository(session: DbSession) -> CommentRepository:
     return CommentRepository(session)
+
+
+CommentRepositoryDep = Annotated[CommentRepository,
+                                 Depends(get_comment_repository)]
 
 
 @router.get(
@@ -24,9 +29,9 @@ def get_comment_repository(
     summary="Комментарии:"
 )
 async def get_comments(
+    repository: CommentRepositoryDep,
     skip: int = 0,
     limit: int = 10,
-    repository: CommentRepository = Depends(get_comment_repository),
 ):
     return await repository.get_list(skip=skip, limit=limit)
 
@@ -38,8 +43,8 @@ async def get_comments(
     summary="Комментарий:"
 )
 async def get_comment(
+    repository: CommentRepositoryDep,
     comment_id: int,
-    repository: CommentRepository = Depends(get_comment_repository),
 ):
     comment = await repository.get(comment_id)
     if not comment:
@@ -54,8 +59,8 @@ async def get_comment(
     summary="Создать комментарий:"
 )
 async def create_comment(
+    repository: CommentRepositoryDep,
     comment_in: CommentCreate,
-    repository: CommentRepository = Depends(get_comment_repository),
 ):
     return await repository.create(comment_in)
 
@@ -67,9 +72,9 @@ async def create_comment(
     summary="Обновить комментарий:"
 )
 async def update_comment(
+    repository: CommentRepositoryDep,
     comment_id: int,
     comment_in: CommentUpdate,
-    repository: CommentRepository = Depends(get_comment_repository),
 ):
     comment = await repository.update(comment_id, comment_in)
     if not comment:
@@ -83,8 +88,8 @@ async def update_comment(
     summary="Удалить комментарий:"
 )
 async def delete_comment(
+    repository: CommentRepositoryDep,
     comment_id: int,
-    repository: CommentRepository = Depends(get_comment_repository),
 ):
     comment = await repository.delete(comment_id)
     if not comment:

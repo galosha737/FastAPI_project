@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.user_m import User
 from ....schems.user_s import UserCreate, UserUpdate
+from ..models.user_m import User
 
 
 class UserRepository:

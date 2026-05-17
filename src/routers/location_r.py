@@ -1,20 +1,27 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from ..infrastructure.postgres.database import get_db
 from ..infrastructure.postgres.repositories.location_rep import (
-    LocationRepository)
+    LocationRepository,
+)
 from ..schems.location_s import LocationOut, LocationUpdateAndCreate
-
 
 router = APIRouter(prefix='/locations', tags=['Местоположения'])
 
 
-def get_location_repository(
-        session: AsyncSession = Depends(get_db)
-        ) -> LocationRepository:
+DbSession = Annotated[AsyncSession, Depends(get_db)]
+
+
+def get_location_repository(session: DbSession) -> LocationRepository:
     return LocationRepository(session)
+
+
+LocationRepositoryDep = Annotated[LocationRepository,
+                                  Depends(get_location_repository)]
 
 
 @router.get(
@@ -24,9 +31,9 @@ def get_location_repository(
     summary="Местоположение:"
 )
 async def get_locations(
+    repository: LocationRepositoryDep,
     skip: int = 0,
     limit: int = 10,
-    repository: LocationRepository = Depends(get_location_repository),
 ):
     return await repository.get_list(skip=skip, limit=limit)
 
@@ -38,8 +45,8 @@ async def get_locations(
     summary="Местоположение:"
 )
 async def get_location(
+    repository: LocationRepositoryDep,
     location_id: int,
-    repository: LocationRepository = Depends(get_location_repository),
 ):
     location = await repository.get(location_id)
     if not location:
@@ -55,8 +62,8 @@ async def get_location(
     summary="Создать местоположение:"
 )
 async def create_location(
+    repository: LocationRepositoryDep,
     location_in: LocationUpdateAndCreate,
-    repository: LocationRepository = Depends(get_location_repository),
 ):
     return await repository.create(location_in)
 
@@ -68,9 +75,9 @@ async def create_location(
     summary="Обновить местоположение:"
 )
 async def update_location(
+    repository: LocationRepositoryDep,
     location_id: int,
     location_in: LocationUpdateAndCreate,
-    repository: LocationRepository = Depends(get_location_repository),
 ):
     location = await repository.update(location_id, location_in)
     if not location:
@@ -85,8 +92,8 @@ async def update_location(
     summary="Удалить местоположение:"
 )
 async def delete_location(
+    repository: LocationRepositoryDep,
     location_id: int,
-    repository: LocationRepository = Depends(get_location_repository),
 ):
     location = await repository.delete(location_id)
     if not location:

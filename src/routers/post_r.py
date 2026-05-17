@@ -1,19 +1,24 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from ..infrastructure.postgres.database import get_db
 from ..infrastructure.postgres.repositories.post_rep import PostRepository
-from ..schems.post_s import PostUpdate, PostCreate, PostOut
-
+from ..schems.post_s import PostCreate, PostOut, PostUpdate
 
 router = APIRouter(prefix='/posts', tags=['Посты'])
 
+# в DbSession кладем AsyncSession, которую берем из get_db
+DbSession = Annotated[AsyncSession, Depends(get_db)]
 
-def get_post_repository(
-        session: AsyncSession = Depends(get_db)
-        ) -> PostRepository:
+
+def get_post_repository(session: DbSession) -> PostRepository:
     return PostRepository(session)
+
+
+PostRepositoryDep = Annotated[PostRepository, Depends(get_post_repository)]
 
 
 @router.get(
@@ -23,9 +28,9 @@ def get_post_repository(
     summary="Посты:"
 )
 async def get_posts(
+    repository: PostRepositoryDep,
     skip: int = 0,
     limit: int = 10,
-    repository: PostRepository = Depends(get_post_repository),
 ):
     return await repository.get_list(skip=skip, limit=limit)
 
@@ -37,8 +42,8 @@ async def get_posts(
     summary="Пост:"
 )
 async def get_post(
+    repository: PostRepositoryDep,
     post_id: int,
-    repository: PostRepository = Depends(get_post_repository),
 ):
     post = await repository.get(post_id)
     if not post:
@@ -53,8 +58,8 @@ async def get_post(
     summary="Создать пост:"
 )
 async def create_post(
+    repository: PostRepositoryDep,
     post_in: PostCreate,
-    repository: PostRepository = Depends(get_post_repository),
 ):
     return await repository.create(post_in)
 
@@ -66,9 +71,9 @@ async def create_post(
     summary="Обновить пост:"
 )
 async def update_post(
+    repository: PostRepositoryDep,
     post_id: int,
     post_in: PostUpdate,
-    repository: PostRepository = Depends(get_post_repository),
 ):
     post = await repository.update(post_id, post_in)
     if not post:
@@ -82,8 +87,8 @@ async def update_post(
     summary="Удалить пост:"
 )
 async def delete_post(
+    repository: PostRepositoryDep,
     post_id: int,
-    repository: PostRepository = Depends(get_post_repository),
 ):
     post = await repository.delete(post_id)
     if not post:

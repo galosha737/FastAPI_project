@@ -1,8 +1,8 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.category_m import Category
 from ....schems.category_s import CategoryUpdateAndCreate
+from ..models.category_m import Category
 
 
 class CategoryRepository:

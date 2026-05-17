@@ -1,9 +1,14 @@
 import re
 from datetime import datetime
 from typing import Annotated
-from pydantic import (BaseModel, Field, ConfigDict, model_validator,
-                      field_validator)
 
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 SLUG = re.compile(r'^[a-z0-9]+(?:-[a-z0-9]+)*$')
 
@@ -17,7 +22,7 @@ class CategoryUpdateAndCreate(BaseModel):
     is_published: Annotated[bool, Field(default=False)]
 
     @model_validator(mode="after")
-    def set_slug_from_title(self) -> "CategoryUpdateAndCreate":
+    def set_slug_from_title(self) -> CategoryUpdateAndCreate:
         if self.slug is None:
             self.slug = self.title.lower()
         return self

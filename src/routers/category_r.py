@@ -1,20 +1,27 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from ..infrastructure.postgres.database import get_db
 from ..infrastructure.postgres.repositories.category_rep import (
-    CategoryRepository)
-from ..schems.category_s import CategoryUpdateAndCreate, CategoryOut
-
+    CategoryRepository,
+)
+from ..schems.category_s import CategoryOut, CategoryUpdateAndCreate
 
 router = APIRouter(prefix='/categories', tags=['Категории'])
 
 
-def get_category_repository(
-        session: AsyncSession = Depends(get_db)
-        ) -> CategoryRepository:
+DbSession = Annotated[AsyncSession, Depends(get_db)]
+
+
+def get_category_repository(session: DbSession) -> CategoryRepository:
     return CategoryRepository(session)
+
+
+CategoryRepositoryDep = Annotated[CategoryRepository,
+                                  Depends(get_category_repository)]
 
 
 @router.get(
@@ -24,9 +31,9 @@ def get_category_repository(
     summary="Категории:"
 )
 async def get_categories(
+    repository: CategoryRepositoryDep,
     skip: int = 0,
     limit: int = 10,
-    repository: CategoryRepository = Depends(get_category_repository),
 ):
     return await repository.get_list(skip=skip, limit=limit)
 
@@ -38,8 +45,8 @@ async def get_categories(
     summary="Категория:"
 )
 async def get_category(
+    repository: CategoryRepositoryDep,
     category_id: int,
-    repository: CategoryRepository = Depends(get_category_repository),
 ):
     category = await repository.get(category_id)
     if not category:
@@ -54,8 +61,8 @@ async def get_category(
     summary="Создать категорию:"
 )
 async def create_category(
+    repository: CategoryRepositoryDep,
     category_in: CategoryUpdateAndCreate,
-    repository: CategoryRepository = Depends(get_category_repository),
 ):
     return await repository.create(category_in)
 
@@ -67,9 +74,9 @@ async def create_category(
     summary="Обновить категорию:"
 )
 async def update_category(
+    repository: CategoryRepositoryDep,
     category_id: int,
     category_in: CategoryUpdateAndCreate,
-    repository: CategoryRepository = Depends(get_category_repository),
 ):
     category = await repository.update(category_id, category_in)
     if not category:
@@ -83,8 +90,8 @@ async def update_category(
     summary="Удалить категорию:"
 )
 async def delete_category(
+    repository: CategoryRepositoryDep,
     category_id: int,
-    repository: CategoryRepository = Depends(get_category_repository),
 ):
     category = await repository.delete(category_id)
     if not category:
