@@ -3,7 +3,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime, timezone
 
 
-time_now = lambda: datetime.now(timezone.utc)
+def time_now():
+    return datetime.now(timezone.utc)
+
 
 class PubAndCreate:
     created_at: Mapped[datetime] = mapped_column(

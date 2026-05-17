@@ -1,8 +1,9 @@
-from ..database import Base
 from sqlalchemy import Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import Optional
+
 from .mixin_m import PubAndCreate
-from typing import Optional, List
+from ..database import Base
 
 
 class Post(Base, PubAndCreate):
@@ -25,7 +26,7 @@ class Post(Base, PubAndCreate):
         nullable=True
     )
     category: Mapped[Optional["Category"]] = relationship("Category", back_populates="posts")
-    comments: Mapped[List["Comment"]] = relationship(
+    comments: Mapped[list["Comment"]] = relationship(
         "Comment",
         back_populates="post",
         cascade="all, delete-orphan"

@@ -1,29 +1,28 @@
-from ..database import Base
 from sqlalchemy import Integer, String, Text, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 
+from ..database import Base
 
 
 class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    username: Mapped[str] = mapped_column(String(50), unique=True)
-    first_name: Mapped[str] = mapped_column(String)
-    last_name: Mapped[str] = mapped_column(String)
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    first_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    last_name: Mapped[str | None] = mapped_column(String, nullable=True)
     email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
-    bio_info: Mapped[str] = mapped_column(Text, default="")
+    bio_info: Mapped[str | None] = mapped_column(Text, nullable=True)
     password: Mapped[str] = mapped_column(String, nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
-    date_joined: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    posts: Mapped[List["Post"]] = relationship(
+    date_joined: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    posts: Mapped[list["Post"]] = relationship(
         "Post",
         back_populates="author",
         cascade="all, delete-orphan"
     )
-    comments: Mapped[List["Comment"]] = relationship(
+    comments: Mapped[list["Comment"]] = relationship(
         "Comment",
         back_populates="author",
         cascade="all, delete-orphan"

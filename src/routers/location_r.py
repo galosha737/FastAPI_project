@@ -1,29 +1,35 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, Response
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from src.infrastructure.sqlite.database import get_db
-from src.repositories.location_rep import LocationRepository
-from src.schems.location_s import LocationOut, LocationUpdateAndCreate
+
+from ..infrastructure.postgres.database import get_db
+from ..infrastructure.postgres.repositories.location_rep import (
+    LocationRepository)
+from ..schems.location_s import LocationOut, LocationUpdateAndCreate
 
 
 router = APIRouter(prefix='/locations', tags=['Местоположения'])
 
-def get_location_repository(session: Session = Depends(get_db)) -> LocationRepository:
+
+def get_location_repository(
+        session: AsyncSession = Depends(get_db)
+        ) -> LocationRepository:
     return LocationRepository(session)
+
 
 @router.get(
     "/",
-    response_model=List[LocationOut],
+    response_model=list[LocationOut],
     status_code=status.HTTP_200_OK,
     summary="Местоположение:"
 )
-def get_locations(
+async def get_locations(
     skip: int = 0,
     limit: int = 10,
     repository: LocationRepository = Depends(get_location_repository),
 ):
-    return repository.get_list(skip=skip, limit=limit)
+    return await repository.get_list(skip=skip, limit=limit)
+
 
 @router.get(
     "/{location_id}",
@@ -31,14 +37,16 @@ def get_locations(
     status_code=status.HTTP_200_OK,
     summary="Местоположение:"
 )
-def get_location(
+async def get_location(
     location_id: int,
     repository: LocationRepository = Depends(get_location_repository),
 ):
-    location = repository.get(location_id)
+    location = await repository.get(location_id)
     if not location:
-        raise HTTPException(status_code=404, detail="Местоположение не найдено")
+        raise HTTPException(status_code=404,
+                            detail="Местоположение не найдено!")
     return location
+
 
 @router.post(
     "/create",
@@ -46,11 +54,12 @@ def get_location(
     status_code=status.HTTP_201_CREATED,
     summary="Создать местоположение:"
 )
-def create_location(
+async def create_location(
     location_in: LocationUpdateAndCreate,
     repository: LocationRepository = Depends(get_location_repository),
 ):
-    return repository.create(location_in)
+    return await repository.create(location_in)
+
 
 @router.put(
     "/put/{location_id}",
@@ -58,26 +67,29 @@ def create_location(
     status_code=status.HTTP_200_OK,
     summary="Обновить местоположение:"
 )
-def update_location(
+async def update_location(
     location_id: int,
     location_in: LocationUpdateAndCreate,
     repository: LocationRepository = Depends(get_location_repository),
 ):
-    location = repository.update(location_id, location_in)
+    location = await repository.update(location_id, location_in)
     if not location:
-        raise HTTPException(status_code=404, detail="Местоположение не найдено")
+        raise HTTPException(status_code=404,
+                            detail="Местоположение не найдено!")
     return location
+
 
 @router.delete(
     "/delete/{location_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Удалить местоположение:"
 )
-def delete_location(
+async def delete_location(
     location_id: int,
     repository: LocationRepository = Depends(get_location_repository),
 ):
-    location = repository.delete(location_id)
+    location = await repository.delete(location_id)
     if not location:
-        raise HTTPException(status_code=404, detail="Местоположение не найдено")
-    return None
+        raise HTTPException(status_code=404,
+                            detail="Местоположение не найдено!")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
