@@ -1,25 +1,18 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, HTTPException, Response
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, Response
 from starlette import status
 
-from ..infrastructure.postgres.database import get_db
-from ..infrastructure.postgres.repositories.comment_rep import CommentRepository
-from ..schems.comment_s import CommentCreate, CommentOut, CommentUpdate
-
-router = APIRouter(prefix='/comments', tags=['Комментарий'])
-
-
-DbSession = Annotated[AsyncSession, Depends(get_db)]
-
-
-def get_comment_repository(session: DbSession) -> CommentRepository:
-    return CommentRepository(session)
+from .dependencies.comment_dep import (
+    CreateCommentUseCaseDep,
+    DeleteCommentUseCaseDep,
+    GetCommentListUseCaseDep,
+    GetCommentUseCaseDep,
+    UpdateCommentUseCaseDep,
+)
+from ..exceptions.comment import CommentNotFound
+from ..schemas.comment_s import CommentCreate, CommentOut, CommentUpdate
 
 
-CommentRepositoryDep = Annotated[CommentRepository,
-                                 Depends(get_comment_repository)]
+router = APIRouter(prefix='/comments', tags=['Комментарии'])
 
 
 @router.get(
@@ -29,11 +22,11 @@ CommentRepositoryDep = Annotated[CommentRepository,
     summary="Комментарии:"
 )
 async def get_comments(
-    repository: CommentRepositoryDep,
+    use_case: GetCommentListUseCaseDep,
     skip: int = 0,
     limit: int = 10,
 ):
-    return await repository.get_list(skip=skip, limit=limit)
+    return await use_case.execute(skip=skip, limit=limit)
 
 
 @router.get(
@@ -43,55 +36,65 @@ async def get_comments(
     summary="Комментарий:"
 )
 async def get_comment(
-    repository: CommentRepositoryDep,
+    use_case: GetCommentUseCaseDep,
     comment_id: int,
 ):
-    comment = await repository.get(comment_id)
-    if not comment:
-        raise HTTPException(status_code=404, detail="Комментарий не найден!")
-    return comment
+    try:
+        return await use_case.execute(comment_id)
+    except CommentNotFound as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Комментарий не найден!",
+        ) from err
 
 
 @router.post(
-    "/create",
+    "/",
     response_model=CommentOut,
     status_code=status.HTTP_201_CREATED,
     summary="Создать комментарий:"
 )
 async def create_comment(
-    repository: CommentRepositoryDep,
+    use_case: CreateCommentUseCaseDep,
     comment_in: CommentCreate,
 ):
-    return await repository.create(comment_in)
+    return await use_case.execute(comment_in)
 
 
 @router.put(
-    "/put/{comment_id}",
+    "/{comment_id}",
     response_model=CommentOut,
     status_code=status.HTTP_200_OK,
     summary="Обновить комментарий:"
 )
 async def update_comment(
-    repository: CommentRepositoryDep,
+    use_case: UpdateCommentUseCaseDep,
     comment_id: int,
     comment_in: CommentUpdate,
 ):
-    comment = await repository.update(comment_id, comment_in)
-    if not comment:
-        raise HTTPException(status_code=404, detail="Комментарий не найден!")
-    return comment
+    try:
+        return await use_case.execute(comment_id, comment_in)
+    except CommentNotFound as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Комментарий не найден!",
+        ) from err
 
 
 @router.delete(
-    "/delete/{comment_id}",
+    "/{comment_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Удалить комментарий:"
 )
 async def delete_comment(
-    repository: CommentRepositoryDep,
+    use_case: DeleteCommentUseCaseDep,
     comment_id: int,
 ):
-    comment = await repository.delete(comment_id)
-    if not comment:
-        raise HTTPException(status_code=404, detail="Комментарий не найден!")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    try:
+        await use_case.execute(comment_id)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except CommentNotFound as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Комментарий не найден!",
+        ) from err

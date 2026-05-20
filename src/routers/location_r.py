@@ -1,27 +1,18 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, HTTPException, Response
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, Response
 from starlette import status
 
-from ..infrastructure.postgres.database import get_db
-from ..infrastructure.postgres.repositories.location_rep import (
-    LocationRepository,
+from ..schemas.location_s import LocationOut, LocationUpdate, LocationCreate
+from ..exceptions.location import LocationNotFound
+from .dependencies.location_dep import (
+    CreateLocationUseCaseDep,
+    DeleteLocationUseCaseDep,
+    GetLocationListUseCaseDep,
+    GetLocationUseCaseDep,
+    UpdateLocationUseCaseDep,
 )
-from ..schems.location_s import LocationOut, LocationUpdateAndCreate
+
 
 router = APIRouter(prefix='/locations', tags=['Местоположения'])
-
-
-DbSession = Annotated[AsyncSession, Depends(get_db)]
-
-
-def get_location_repository(session: DbSession) -> LocationRepository:
-    return LocationRepository(session)
-
-
-LocationRepositoryDep = Annotated[LocationRepository,
-                                  Depends(get_location_repository)]
 
 
 @router.get(
@@ -31,11 +22,11 @@ LocationRepositoryDep = Annotated[LocationRepository,
     summary="Местоположение:"
 )
 async def get_locations(
-    repository: LocationRepositoryDep,
+    use_case: GetLocationListUseCaseDep,
     skip: int = 0,
     limit: int = 10,
 ):
-    return await repository.get_list(skip=skip, limit=limit)
+    return await use_case.execute(skip=skip, limit=limit)
 
 
 @router.get(
@@ -45,58 +36,65 @@ async def get_locations(
     summary="Местоположение:"
 )
 async def get_location(
-    repository: LocationRepositoryDep,
+    use_case: GetLocationUseCaseDep,
     location_id: int,
 ):
-    location = await repository.get(location_id)
-    if not location:
-        raise HTTPException(status_code=404,
-                            detail="Местоположение не найдено!")
-    return location
+    try:
+        return await use_case.execute(location_id)
+    except LocationNotFound as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Местоположение не найдено!",
+        ) from err
 
 
 @router.post(
-    "/create",
+    "/",
     response_model=LocationOut,
     status_code=status.HTTP_201_CREATED,
     summary="Создать местоположение:"
 )
 async def create_location(
-    repository: LocationRepositoryDep,
-    location_in: LocationUpdateAndCreate,
+    use_case: CreateLocationUseCaseDep,
+    location_in: LocationCreate,
 ):
-    return await repository.create(location_in)
+    return await use_case.execute(location_in)
 
 
 @router.put(
-    "/put/{location_id}",
+    "/{location_id}",
     response_model=LocationOut,
     status_code=status.HTTP_200_OK,
     summary="Обновить местоположение:"
 )
 async def update_location(
-    repository: LocationRepositoryDep,
+    use_case: UpdateLocationUseCaseDep,
     location_id: int,
-    location_in: LocationUpdateAndCreate,
+    location_in: LocationUpdate,
 ):
-    location = await repository.update(location_id, location_in)
-    if not location:
-        raise HTTPException(status_code=404,
-                            detail="Местоположение не найдено!")
-    return location
+    try:
+        return await use_case.execute(location_id, location_in)
+    except LocationNotFound as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Местоположение не найдено!",
+        ) from err
 
 
 @router.delete(
-    "/delete/{location_id}",
+    "/{location_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Удалить местоположение:"
 )
 async def delete_location(
-    repository: LocationRepositoryDep,
+    use_case: DeleteLocationUseCaseDep,
     location_id: int,
 ):
-    location = await repository.delete(location_id)
-    if not location:
-        raise HTTPException(status_code=404,
-                            detail="Местоположение не найдено!")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    try:
+        await use_case.execute(location_id)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except LocationNotFound as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Местоположение не найдено!",
+        ) from err

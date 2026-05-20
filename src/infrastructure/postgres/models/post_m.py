@@ -1,4 +1,4 @@
-
+from typing import Optional
 from sqlalchemy import Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -20,12 +20,12 @@ class Post(Base, PubAndCreate):
         ForeignKey("locations.id", ondelete="SET NULL"),
         nullable=True
     )
-    location: Mapped["Location" | None] = relationship("Location", back_populates="posts")
+    location: Mapped['Location | None'] = relationship("Location", back_populates="posts")
     category_id: Mapped[int | None] = mapped_column(
         ForeignKey("categories.id", ondelete="SET NULL"),
         nullable=True
     )
-    category: Mapped[Category | None] = relationship("Category", back_populates="posts")
+    category: Mapped['Category | None'] = relationship("Category", back_populates="posts")
     comments: Mapped[list["Comment"]] = relationship(
         "Comment",
         back_populates="post",

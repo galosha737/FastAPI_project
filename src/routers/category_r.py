@@ -1,27 +1,18 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, HTTPException, Response
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, Response
 from starlette import status
 
-from ..infrastructure.postgres.database import get_db
-from ..infrastructure.postgres.repositories.category_rep import (
-    CategoryRepository,
+from .dependencies.category_dep import (
+    CreateCategoryUseCaseDep,
+    DeleteCategoryUseCaseDep,
+    GetCategoryListUseCaseDep,
+    GetCategoryUseCaseDep,
+    UpdateCategoryUseCaseDep,
 )
-from ..schems.category_s import CategoryOut, CategoryUpdateAndCreate
+from ..exceptions.category import CategoryNotFound
+from ..schemas.category_s import CategoryOut, CategoryUpdate, CategoryCreate
+
 
 router = APIRouter(prefix='/categories', tags=['Категории'])
-
-
-DbSession = Annotated[AsyncSession, Depends(get_db)]
-
-
-def get_category_repository(session: DbSession) -> CategoryRepository:
-    return CategoryRepository(session)
-
-
-CategoryRepositoryDep = Annotated[CategoryRepository,
-                                  Depends(get_category_repository)]
 
 
 @router.get(
@@ -31,11 +22,11 @@ CategoryRepositoryDep = Annotated[CategoryRepository,
     summary="Категории:"
 )
 async def get_categories(
-    repository: CategoryRepositoryDep,
+    use_case: GetCategoryListUseCaseDep,
     skip: int = 0,
     limit: int = 10,
 ):
-    return await repository.get_list(skip=skip, limit=limit)
+    return await use_case.execute(skip=skip, limit=limit)
 
 
 @router.get(
@@ -45,55 +36,65 @@ async def get_categories(
     summary="Категория:"
 )
 async def get_category(
-    repository: CategoryRepositoryDep,
+    use_case: GetCategoryUseCaseDep,
     category_id: int,
 ):
-    category = await repository.get(category_id)
-    if not category:
-        raise HTTPException(status_code=404, detail="Категория не найдена!")
-    return category
+    try:
+        return await use_case.execute(category_id)
+    except CategoryNotFound as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Категория не найдена!",
+        ) from err
 
 
 @router.post(
-    "/create",
+    "/",
     response_model=CategoryOut,
     status_code=status.HTTP_201_CREATED,
     summary="Создать категорию:"
 )
 async def create_category(
-    repository: CategoryRepositoryDep,
-    category_in: CategoryUpdateAndCreate,
+    use_case: CreateCategoryUseCaseDep,
+    category_in: CategoryCreate,
 ):
-    return await repository.create(category_in)
+    return await use_case.execute(category_in)
 
 
 @router.put(
-    "/put/{category_id}",
+    "/{category_id}",
     response_model=CategoryOut,
     status_code=status.HTTP_200_OK,
     summary="Обновить категорию:"
 )
 async def update_category(
-    repository: CategoryRepositoryDep,
+    use_case: UpdateCategoryUseCaseDep,
     category_id: int,
-    category_in: CategoryUpdateAndCreate,
+    category_in: CategoryUpdate,
 ):
-    category = await repository.update(category_id, category_in)
-    if not category:
-        raise HTTPException(status_code=404, detail="Категория не найдена")
-    return category
+    try:
+        return await use_case.execute(category_id, category_in)
+    except CategoryNotFound as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Категория не найдена!",
+        ) from err
 
 
 @router.delete(
-    "/delete/{category_id}",
+    "/{category_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Удалить категорию:"
 )
 async def delete_category(
-    repository: CategoryRepositoryDep,
+    use_case: DeleteCategoryUseCaseDep,
     category_id: int,
 ):
-    category = await repository.delete(category_id)
-    if not category:
-        raise HTTPException(status_code=404, detail="Категория не найдена!")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    try:
+        await use_case.execute(category_id)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except CategoryNotFound as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Категория не найдена!",
+        ) from err

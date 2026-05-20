@@ -31,12 +31,12 @@ dev = [
 ]
 
 [tool.ruff]
-line-length = 80  # Максимальная длина строки
-target-version = "py314"  # Твоя версия Python
-fix = true  # Автоисправление при --fix
-unsafe-fixes = false  # Не применять небезопасные фиксы автоматически
+line-length = 80
+target-version = "py314"
+fix = true
+unsafe-fixes = false
 
-# Исключить папки
+
 exclude = [
     ".git",
     ".venv",
@@ -46,12 +46,11 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-# Включить правила (E, F — базовые из Flake8, I — isort, B — bugbear, UP — pyupgrade)
 select = ["E", "F", "I", "B", "UP", "S", "RUF"]
 ignore = [
-    "E501",  # Длина строки (Ruff format уже контролирует)
+    "E501",
 ]
 
 [tool.ruff.format]
-quote-style = "double"  # Двойные кавычки
-indent-style = "space"  # Отступы пробелами
+quote-style = "double"
+indent-style = "space"

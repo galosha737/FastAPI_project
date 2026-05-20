@@ -1,7 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ....schems.category_s import CategoryUpdateAndCreate
 from ..models.category_m import Category
 
 
@@ -17,32 +16,18 @@ class CategoryRepository:
     async def get(self, category_id: int) -> Category | None:
         return await self.session.get(Category, category_id)
 
-    async def create(self, data: CategoryUpdateAndCreate) -> Category:
-        category = Category(**data.model_dump())
+    async def create(self, category: Category) -> Category:
         self.session.add(category)
         await self.session.flush()
         await self.session.refresh(category)
         return category
 
-    async def update(self,
-                     category_id: int,
-                     data: CategoryUpdateAndCreate) -> Category | None:
-        category = await self.get(category_id)
-        if not category:
-            return None
-
-        for field, value in data.model_dump(exclude_unset=True).items():
-            setattr(category, field, value)
-
+    async def update(self, category: Category) -> Category:
         await self.session.flush()
         await self.session.refresh(category)
         return category
 
-    async def delete(self, category_id: int) -> Category | None:
-        category = await self.get(category_id)
-        if not category:
-            return None
-
+    async def delete(self, category: Category) -> None:
         await self.session.delete(category)
         await self.session.flush()
-        return category
+        return None

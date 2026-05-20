@@ -1,7 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ....schems.comment_s import CommentCreate, CommentUpdate
 from ..models.comment_m import Comment
 
 
@@ -17,32 +16,18 @@ class CommentRepository:
     async def get(self, Comment_id: int) -> Comment | None:
         return await self.session.get(Comment, Comment_id)
 
-    async def create(self, data: CommentCreate) -> Comment:
-        comment = Comment(**data.model_dump())
+    async def create(self, comment: Comment) -> Comment:
         self.session.add(comment)
         await self.session.flush()
         await self.session.refresh(comment)
         return comment
 
-    async def update(self,
-                     comment_id: int,
-                     data: CommentUpdate) -> Comment | None:
-        comment = await self.get(comment_id)
-        if not comment:
-            return None
-
-        for field, value in data.model_dump(exclude_unset=True).items():
-            setattr(comment, field, value)
-
+    async def update(self, comment: Comment) -> Comment:
         await self.session.flush()
         await self.session.refresh(comment)
         return comment
 
-    async def delete(self, comment_id: int) -> Comment | None:
-        comment = await self.get(comment_id)
-        if not comment:
-            return None
-
+    async def delete(self, comment: Comment) -> None:
         await self.session.delete(comment)
         await self.session.flush()
-        return comment
+        return None

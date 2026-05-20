@@ -1,7 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ....schems.location_s import LocationUpdateAndCreate
 from ..models.location_m import Location
 
 
@@ -17,32 +16,18 @@ class LocationRepository:
     async def get(self, Location_id: int) -> Location | None:
         return await self.session.get(Location, Location_id)
 
-    async def create(self, data: LocationUpdateAndCreate) -> Location:
-        location = Location(**data.model_dump())
+    async def create(self, location: Location) -> Location:
         self.session.add(location)
         await self.session.flush()
         await self.session.refresh(location)
         return location
 
-    async def update(self,
-                     location_id: int,
-                     data: LocationUpdateAndCreate) -> Location | None:
-        location = await self.get(location_id)
-        if not location:
-            return None
-
-        for field, value in data.model_dump(exclude_unset=True).items():
-            setattr(location, field, value)
-
+    async def update(self, location: Location) -> Location:
         await self.session.flush()
         await self.session.refresh(location)
         return location
 
-    async def delete(self, location_id: int) -> Location | None:
-        location = await self.get(location_id)
-        if not location:
-            return None
-
+    async def delete(self, location: Location) -> None:
         await self.session.delete(location)
         await self.session.flush()
-        return location
+        return None

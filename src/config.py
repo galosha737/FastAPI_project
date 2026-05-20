@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: SecretStr
     POSTGRES_RECONNECT_INTERVAL_SEC: int
 
-    # URL не хранится а формируется динамически при каждом 
+    # URL не хранится, формируется динамически при каждом
     # settings.postgres_url
     @property
     def postgres_url(self) -> str:
