@@ -1,3 +1,11 @@
+from fastapi import HTTPException, status
+
+from exceptions.database import (
+    DataConflictError,
+    DatabaseError,
+    DatabaseUnavailableError,
+    ForeignKeyConflictError,
+)
 from infrastructure.postgres.models import Category
 from infrastructure.postgres.repositories.category_rep import (
     CategoryRepository,)
@@ -9,10 +17,40 @@ class CreateCategoryUseCase:
         self.repository = repository
 
     async def execute(self, data: CategoryCreate) -> Category:
+        title = data.title.strip()
+        slug = data.slug.strip()
+
+        if not title or not slug:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Title and slug cannot be empty",
+            )
+        
         category = Category(
             title=data.title,
             slug=data.slug,
             description=data.description,
             is_published=data.is_published,
         )
-        return await self.repository.create(category)
+        try:
+            return await self.repository.create(category)
+        except DataConflictError as err:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(err),
+            ) from err
+        except ForeignKeyConflictError as err:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(err),
+            ) from err
+        except DatabaseUnavailableError as err:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(err),
+            ) from err
+        except DatabaseError as err:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=str(err),
+            ) from err

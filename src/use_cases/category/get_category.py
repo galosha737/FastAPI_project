@@ -1,7 +1,12 @@
+from fastapi import HTTPException, status
+
+from exceptions.database import (
+    DatabaseError,
+    DatabaseUnavailableError,
+)
 from infrastructure.postgres.models import Category
 from infrastructure.postgres.repositories.category_rep import (
     CategoryRepository,)
-from exceptions.category import CategoryNotFound
 
 
 class GetCategoryUseCase:
@@ -9,7 +14,26 @@ class GetCategoryUseCase:
         self.repository = repository
 
     async def execute(self, category_id: int) -> Category:
-        category = await self.repository.get(category_id)
-        if category is None:
-            raise CategoryNotFound(category_id)
-        return category
+        try:
+            if category_id <= 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="category_id must be greater than 0",
+                )
+            category = await self.repository.get(category_id)
+            if category is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Category with id={category_id} not found",
+                )
+            return category
+        except DatabaseUnavailableError as err:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(err),
+            ) from err
+        except DatabaseError as err:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=str(err),
+            ) from err

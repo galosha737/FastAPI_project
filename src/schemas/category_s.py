@@ -1,12 +1,15 @@
 import re
 from datetime import datetime
 from typing import Annotated
-from pydantic import (
-    BaseModel, 
-    ConfigDict, 
-    Field, field_validator,
-    model_validator)
 
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StrictBool,
+    field_validator,
+    model_validator,
+)
 
 SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -27,9 +30,20 @@ def normalize_slug(value: str) -> str:
 
 
 class CategoryBase(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     title: Annotated[str, Field(min_length=3, max_length=255)]
     description: Annotated[str | None, Field(default=None, max_length=1000)]
-    is_published: Annotated[bool, Field(default=False)]
+    is_published: StrictBool = False
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def empty_description_to_none(cls, value):
+        if isinstance(value, str):
+            value = value.strip()
+            if value == "":
+                return None
+        return value
 
 
 class CategoryCreate(CategoryBase):
@@ -44,10 +58,12 @@ class CategoryCreate(CategoryBase):
 
 
 class CategoryUpdate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     title: Annotated[str | None, Field(default=None, min_length=3, max_length=255)]
     slug: Annotated[str | None, Field(default=None, min_length=3, max_length=100)]
     description: Annotated[str | None, Field(default=None, max_length=1000)]
-    is_published: Annotated[bool | None, Field(default=None)]
+    is_published: StrictBool | None = None
 
     @field_validator("slug")
     @classmethod
@@ -55,6 +71,15 @@ class CategoryUpdate(BaseModel):
         if value is None:
             return value
         return normalize_slug(value)
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def empty_description_to_none(cls, value):
+        if isinstance(value, str):
+            value = value.strip()
+            if value == "":
+                return None
+        return value
 
 
 class CategoryOut(CategoryBase):

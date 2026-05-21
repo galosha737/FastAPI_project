@@ -1,10 +1,9 @@
 from typing import Annotated
-
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.postgres.database import get_db
-from infrastructure.postgres.repositories.user_rep import UserRepository
+from ...infrastructure.postgres.database import get_db
+from ...infrastructure.postgres.repositories.user_rep import UserRepository
 from use_cases.user.create_user import CreateUserUseCase
 from use_cases.user.update_user import UpdateUserUseCase
 from use_cases.user.delete_user import DeleteUserUseCase

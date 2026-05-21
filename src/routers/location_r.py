@@ -1,8 +1,7 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter
 from starlette import status
 
 from ..schemas.location_s import LocationOut, LocationUpdate, LocationCreate
-from ..exceptions.location import LocationNotFound
 from .dependencies.location_dep import (
     CreateLocationUseCaseDep,
     DeleteLocationUseCaseDep,
@@ -39,13 +38,8 @@ async def get_location(
     use_case: GetLocationUseCaseDep,
     location_id: int,
 ):
-    try:
-        return await use_case.execute(location_id)
-    except LocationNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Местоположение не найдено!",
-        ) from err
+    return await use_case.execute(location_id)
+
 
 
 @router.post(
@@ -72,13 +66,7 @@ async def update_location(
     location_id: int,
     location_in: LocationUpdate,
 ):
-    try:
-        return await use_case.execute(location_id, location_in)
-    except LocationNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Местоположение не найдено!",
-        ) from err
+    return await use_case.execute(location_id, location_in)
 
 
 @router.delete(
@@ -90,11 +78,4 @@ async def delete_location(
     use_case: DeleteLocationUseCaseDep,
     location_id: int,
 ):
-    try:
-        await use_case.execute(location_id)
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-    except LocationNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Местоположение не найдено!",
-        ) from err
+    await use_case.execute(location_id)

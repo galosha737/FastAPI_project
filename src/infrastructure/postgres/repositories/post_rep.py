@@ -1,7 +1,14 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 
 from ..models.post_m import Post
+from exceptions.database import (
+    DataConflictError,
+    DatabaseError,
+    DatabaseUnavailableError,
+    ForeignKeyConflictError,
+)
 
 
 class PostRepository:
@@ -9,25 +16,136 @@ class PostRepository:
         self.session = session
 
     async def get_list(self, skip: int = 0, limit: int = 10) -> list[Post]:
-        s = select(Post).offset(skip).limit(limit)
-        result = await self.session.execute(s)
-        return list(result.scalars().all())
+        try:
+            s = select(Post).offset(skip).limit(limit)
+            result = await self.session.execute(s)
+            return list(result.scalars().all())
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Post",
+                operation="get_list",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Post",
+                operation="get_list",
+                details=str(err),
+            ) from err
 
-    async def get(self, Post_id: int) -> Post | None:
-        return await self.session.get(Post, Post_id)
+    async def get(self, post_id: int) -> Post | None:
+        try:
+            return await self.session.get(Post, post_id)
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Post",
+                operation="get",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Post",
+                operation="get",
+                details=str(err),
+            ) from err
 
     async def create(self, post: Post) -> Post:
-        self.session.add(post)
-        await self.session.flush()
-        await self.session.refresh(post)
-        return post
+        try:
+            self.session.add(post)
+            await self.session.flush()
+            await self.session.refresh(post)
+            return post
+        except IntegrityError as err:
+            raise self._map_integrity_error(
+                err=err,
+                operation="create",
+                obj=post,
+            ) from err
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Post",
+                operation="create",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Post",
+                operation="create",
+                details=str(err),
+            ) from err
 
     async def update(self, post: Post) -> Post:
-        await self.session.flush()
-        await self.session.refresh(post)
-        return post
+        try:
+            await self.session.flush()
+            await self.session.refresh(post)
+            return post
+        except IntegrityError as err:
+            raise self._map_integrity_error(
+                err=err,
+                operation="update",
+                obj=post,
+            ) from err
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Post",
+                operation="update",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Post",
+                operation="update",
+                details=str(err),
+            ) from err
 
     async def delete(self, post: Post) -> None:
-        await self.session.delete(post)
-        await self.session.flush()
-        return None
+        try:
+            await self.session.delete(post)
+            await self.session.flush()
+        except IntegrityError as err:
+            raise self._map_integrity_error(
+                err=err,
+                operation="delete",
+                obj=post,
+            ) from err
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Post",
+                operation="delete",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Post",
+                operation="delete",
+                details=str(err),
+            ) from err
+
+    def _map_integrity_error(
+        self,
+        *,
+        err: IntegrityError,
+        operation: str,
+        obj: Post,
+    ) -> DatabaseError:
+        message = str(err.orig).lower()
+
+        if "foreign key" in message:
+            return ForeignKeyConflictError(
+                entity="Post",
+                operation=operation,
+                details=str(err.orig),
+            )
+
+        if "unique" in message or "duplicate" in message:
+            return DataConflictError(
+                entity="Post",
+                operation=operation,
+                details=str(err.orig),
+            )
+
+        return DatabaseError(
+            entity="Post",
+            operation=operation,
+            details=str(err.orig),
+        )

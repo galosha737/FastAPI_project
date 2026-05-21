@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr
+from pydantic import (BaseModel, ConfigDict, EmailStr, Field, SecretStr, field_validator)
 
 
 class UserUpdate(BaseModel):
@@ -16,6 +16,15 @@ class UserUpdate(BaseModel):
 class UserCreate(UserUpdate):
     username: Annotated[str, Field(min_length=5, max_length=30)]
     password: SecretStr
+
+    @field_validator("username", "email", mode="before")
+    @classmethod
+    def strip_required_strings(cls, value: str) -> str:
+        if isinstance(value, str):
+            value = value.strip()
+        if not value:
+            raise ValueError("Field cannot be empty")
+        return value
 
 
 class UserOut(UserUpdate):

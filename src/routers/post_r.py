@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter
 from starlette import status
 
-from exceptions.post import PostNotFound
 from ..schemas.post_s import PostCreate, PostOut, PostUpdate
 from .dependencies.post_dep import (
     CreatePostUseCaseDep,
@@ -39,13 +38,7 @@ async def get_post(
     use_case: GetPostUseCaseDep,
     post_id: int,
 ):
-    try:
-        return await use_case.execute(post_id)
-    except PostNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Пост не найден!",
-        ) from err
+    return await use_case.execute(post_id)
 
 
 @router.post(
@@ -72,13 +65,7 @@ async def update_post(
     post_id: int,
     post_in: PostUpdate,
 ):
-    try:
-        return await use_case.execute(post_id, post_in)
-    except PostNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Пост не найден!",
-        ) from err
+    return await use_case.execute(post_id, post_in)
 
 
 @router.delete(
@@ -90,11 +77,4 @@ async def delete_post(
     use_case: DeletePostUseCaseDep,
     post_id: int,
 ):
-    try:
-        await use_case.execute(post_id)
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-    except PostNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Пост не найден!",
-        ) from err
+    await use_case.execute(post_id)

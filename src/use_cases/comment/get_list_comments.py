@@ -1,6 +1,12 @@
+from fastapi import HTTPException, status
+
 from infrastructure.postgres.models import Comment
 from infrastructure.postgres.repositories.comment_rep import (
     CommentRepository,)
+from exceptions.database import (
+    DatabaseError,
+    DatabaseUnavailableError,
+)
 
 
 class GetCommentListUseCase:
@@ -11,4 +17,20 @@ class GetCommentListUseCase:
                       *,
                       skip: int = 0,
                       limit: int = 10) -> list[Comment]:
-        return await self.repository.get_list(skip=skip, limit=limit)
+        try:
+            if skip < 0 | limit <= 0 | limit >= 100:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Incorrect arguments",
+                )
+            return await self.repository.get_list(skip=skip, limit=limit)
+        except DatabaseUnavailableError as err:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(err),
+            ) from err
+        except DatabaseError as err:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=str(err),
+            ) from err

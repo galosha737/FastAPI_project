@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter
 from starlette import status
 
 from .dependencies.comment_dep import (
@@ -8,7 +8,6 @@ from .dependencies.comment_dep import (
     GetCommentUseCaseDep,
     UpdateCommentUseCaseDep,
 )
-from ..exceptions.comment import CommentNotFound
 from ..schemas.comment_s import CommentCreate, CommentOut, CommentUpdate
 
 
@@ -39,13 +38,7 @@ async def get_comment(
     use_case: GetCommentUseCaseDep,
     comment_id: int,
 ):
-    try:
-        return await use_case.execute(comment_id)
-    except CommentNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Комментарий не найден!",
-        ) from err
+    return await use_case.execute(comment_id)
 
 
 @router.post(
@@ -72,13 +65,8 @@ async def update_comment(
     comment_id: int,
     comment_in: CommentUpdate,
 ):
-    try:
-        return await use_case.execute(comment_id, comment_in)
-    except CommentNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Комментарий не найден!",
-        ) from err
+    return await use_case.execute(comment_id, comment_in)
+
 
 
 @router.delete(
@@ -90,11 +78,4 @@ async def delete_comment(
     use_case: DeleteCommentUseCaseDep,
     comment_id: int,
 ):
-    try:
-        await use_case.execute(comment_id)
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-    except CommentNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Комментарий не найден!",
-        ) from err
+    await use_case.execute(comment_id)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter
 from starlette import status
 
 from .dependencies.category_dep import (
@@ -8,7 +8,6 @@ from .dependencies.category_dep import (
     GetCategoryUseCaseDep,
     UpdateCategoryUseCaseDep,
 )
-from ..exceptions.category import CategoryNotFound
 from ..schemas.category_s import CategoryOut, CategoryUpdate, CategoryCreate
 
 
@@ -39,13 +38,7 @@ async def get_category(
     use_case: GetCategoryUseCaseDep,
     category_id: int,
 ):
-    try:
-        return await use_case.execute(category_id)
-    except CategoryNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Категория не найдена!",
-        ) from err
+    return await use_case.execute(category_id)
 
 
 @router.post(
@@ -72,13 +65,7 @@ async def update_category(
     category_id: int,
     category_in: CategoryUpdate,
 ):
-    try:
-        return await use_case.execute(category_id, category_in)
-    except CategoryNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Категория не найдена!",
-        ) from err
+    return await use_case.execute(category_id, category_in)
 
 
 @router.delete(
@@ -90,11 +77,4 @@ async def delete_category(
     use_case: DeleteCategoryUseCaseDep,
     category_id: int,
 ):
-    try:
-        await use_case.execute(category_id)
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-    except CategoryNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Категория не найдена!",
-        ) from err
+    await use_case.execute(category_id)

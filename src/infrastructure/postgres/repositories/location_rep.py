@@ -1,7 +1,14 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.location_m import Location
+from exceptions.database import (
+    DataConflictError,
+    DatabaseError,
+    DatabaseUnavailableError,
+    ForeignKeyConflictError,
+)
 
 
 class LocationRepository:
@@ -9,25 +16,139 @@ class LocationRepository:
         self.session = session
 
     async def get_list(self, skip: int = 0, limit: int = 10) -> list[Location]:
-        s = select(Location).offset(skip).limit(limit)
-        result = await self.session.execute(s)
-        return list(result.scalars().all())
+        try:
+            s = select(Location).offset(skip).limit(limit)
+            result = await self.session.execute(s)
+            return list(result.scalars().all())
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Location",
+                operation="get_list",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Location",
+                operation="get_list",
+                details=str(err),
+            ) from err
 
-    async def get(self, Location_id: int) -> Location | None:
-        return await self.session.get(Location, Location_id)
+    async def get(self, location_id: int) -> Location | None:
+        try:
+            return await self.session.get(Location, location_id)
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Location",
+                operation="get",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Location",
+                operation="get",
+                details=str(err),
+            ) from err
 
     async def create(self, location: Location) -> Location:
-        self.session.add(location)
-        await self.session.flush()
-        await self.session.refresh(location)
-        return location
+        try:
+            self.session.add(location)
+            await self.session.flush()
+            await self.session.refresh(location)
+            return location
+        except IntegrityError as err:
+            raise self._map_integrity_error(
+                err=err,
+                operation="create",
+                obj=location,
+            ) from err
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Location",
+                operation="create",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Location",
+                operation="create",
+                details=str(err),
+            ) from err
 
     async def update(self, location: Location) -> Location:
-        await self.session.flush()
-        await self.session.refresh(location)
-        return location
+        try:
+            await self.session.flush()
+            await self.session.refresh(location)
+            return location
+        except IntegrityError as err:
+            raise self._map_integrity_error(
+                err=err,
+                operation="update",
+                obj=location,
+            ) from err
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Location",
+                operation="update",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Location",
+                operation="update",
+                details=str(err),
+            ) from err
 
     async def delete(self, location: Location) -> None:
-        await self.session.delete(location)
-        await self.session.flush()
-        return None
+        try:
+            await self.session.delete(location)
+            await self.session.flush()
+            return None
+        except IntegrityError as err:
+            raise self._map_integrity_error(
+                err=err,
+                operation="delete",
+                obj=location,
+            ) from err
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Location",
+                operation="delete",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Location",
+                operation="delete",
+                details=str(err),
+            ) from err
+
+    def _map_integrity_error(
+        self,
+        *,
+        err: IntegrityError,
+        operation: str,
+        obj: Location,
+    ) -> DatabaseError:
+        message = str(err.orig).lower()
+
+        if "unique" in message or "duplicate" in message:
+            return DataConflictError(
+                entity="Location",
+                operation=operation,
+                field="name",
+                value=getattr(obj, "name", None),
+                details=str(err.orig),
+            )
+
+        if "foreign key" in message:
+            return ForeignKeyConflictError(
+                entity="Location",
+                operation=operation,
+                details=str(err.orig),
+            )
+
+        return DatabaseError(
+            entity="Location",
+            operation=operation,
+            details=str(err.orig),
+        )

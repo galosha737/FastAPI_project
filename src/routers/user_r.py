@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter
 from starlette import status
 
-from exceptions.user import UserNotFound
 from ..schemas.user_s import UserCreate, UserOut, UserUpdate
 from .dependencies.user_dep import (
     CreateUserUseCaseDep,
@@ -39,13 +38,7 @@ async def get_user(
     use_case: GetUserUseCaseDep,
     user_id: int,
 ):
-    try:
-        return await use_case.execute(user_id)
-    except UserNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Пользователь не найден!",
-        ) from err
+    return await use_case.execute(user_id)
 
 
 @router.post(
@@ -72,13 +65,7 @@ async def update_user(
     user_id: int,
     user_in: UserUpdate,
 ):
-    try:
-        return await use_case.execute(user_id, user_in)
-    except UserNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Пользователь не найден!",
-        ) from err
+    return await use_case.execute(user_id, user_in)
 
 
 @router.delete(
@@ -90,11 +77,4 @@ async def delete_user(
     use_case: DeleteUserUseCaseDep,
     user_id: int,
 ):
-    try:
-        await use_case.execute(user_id)
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-    except UserNotFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Пользователь не найден!",
-        ) from err
+    await use_case.execute(user_id)
