@@ -1,9 +1,8 @@
 from fastapi import APIRouter
 from starlette import status
 
-from ..schemas.user_s import UserCreate, UserOut, UserUpdate
+from ..schemas.user_s import UserOut, UserUpdate
 from .dependencies.user_dep import (
-    CreateUserUseCaseDep,
     DeleteUserUseCaseDep,
     GetUserListUseCaseDep,
     GetUserUseCaseDep,
@@ -39,19 +38,6 @@ async def get_user(
     user_id: int,
 ):
     return await use_case.execute(user_id)
-
-
-@router.post(
-    "/",
-    response_model=UserOut,
-    status_code=status.HTTP_201_CREATED,
-    summary="Создать пользователя:"
-)
-async def create_user(
-    use_case: CreateUserUseCaseDep,
-    user_in: UserCreate,
-):
-    return await use_case.execute(user_in)
 
 
 @router.put(

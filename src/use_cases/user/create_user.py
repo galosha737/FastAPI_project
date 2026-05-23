@@ -9,6 +9,7 @@ from exceptions.database import (
 from infrastructure.postgres.models import User
 from infrastructure.postgres.repositories.user_rep import UserRepository
 from schemas.user_s import UserCreate
+from auth.security import get_hash_password
 
 
 class CreateUserUseCase:
@@ -17,8 +18,8 @@ class CreateUserUseCase:
 
     async def execute(self, data: UserCreate) -> User:
         username = data.username.strip()
-        password = data.password.strip()
-        email = data.email.strip()
+        password = data.password.get_secret_value().strip()
+        email = str(data.email).strip()
 
         if not username or not password or not email:
             raise HTTPException(
@@ -26,9 +27,11 @@ class CreateUserUseCase:
                 detail="email, username and password cannot be empty",
             )
 
+        hashed_password = get_hash_password(password)
+
         user = User(
             username=username,
-            password=password,
+            password=hashed_password,
             email=email,
             bio_info=data.bio_info,
             first_name=data.first_name,

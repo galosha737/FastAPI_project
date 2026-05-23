@@ -25,7 +25,7 @@ class CreateCategoryUseCase:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Title and slug cannot be empty",
             )
-        
+
         category = Category(
             title=data.title,
             slug=data.slug,

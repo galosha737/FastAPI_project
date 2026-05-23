@@ -8,9 +8,9 @@ class Settings(BaseSettings):
     ROOT_PATH: str = ''
 
     # Для токена
-    # ACCESS_TOKEN_EXPIRE_MINUTES: int = 5
-    # SECRET_AUTH_KEY: SecretStr
-    # AUTH_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 5
+    SECRET_AUTH_KEY: SecretStr
+    AUTH_ALGORITHM: str = "HS256"
 
     # БД
     POSTGRES_SCHEMA: str

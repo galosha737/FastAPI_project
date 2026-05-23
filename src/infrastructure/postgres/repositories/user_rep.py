@@ -48,7 +48,25 @@ class UserRepository:
                 operation="get",
                 details=str(err),
             ) from err
-
+        
+    async def get_by_username(self, username: str) -> User | None:
+        try:
+            s = select(User).where(User.username == username)
+            result = await self.session.execute(s)
+            return result.scalar_one_or_none()
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="User",
+                operation="get",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="User",
+                operation="get",
+                details=str(err),
+            ) from err
+    
     async def create(self, user: User) -> User:
         try:
             self.session.add(user)
