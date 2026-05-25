@@ -6,7 +6,7 @@ from exceptions.database import (
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import Post
+from infrastructure.postgres.models import Post, User
 from infrastructure.postgres.repositories.post_rep import (
     PostRepository,)
 from schemas.post_s import PostUpdate
@@ -18,9 +18,15 @@ class UpdatePostUseCase:
 
     async def execute(self,
                       post_id: int,
-                      data: PostUpdate
+                      data: PostUpdate,
+                      current_user: User,
                       ) -> Post:
         post = await self.repository.get(post_id)
+        if post.author_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not the author of this post",
+            )
         if post is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

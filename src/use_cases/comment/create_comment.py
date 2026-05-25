@@ -6,7 +6,7 @@ from exceptions.database import (
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import Comment
+from infrastructure.postgres.models import Comment, User
 from infrastructure.postgres.repositories.comment_rep import (
     CommentRepository,)
 from schemas.comment_s import CommentCreate
@@ -16,7 +16,9 @@ class CreateCommentUseCase:
     def __init__(self, repository: CommentRepository):
         self.repository = repository
 
-    async def execute(self, data: CommentCreate) -> Comment:
+    async def execute(self,
+                      data: CommentCreate,
+                      current_user: User) -> Comment:
         text = data.text.strip()
 
         if not text:
@@ -27,7 +29,7 @@ class CreateCommentUseCase:
         
         comment = Comment(
             text=data.text,
-            author_id=data.author_id,
+            author_id=current_user.id,
             post_id=data.post_id,
         )
         try:

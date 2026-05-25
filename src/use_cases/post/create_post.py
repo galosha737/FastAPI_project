@@ -6,7 +6,7 @@ from exceptions.database import (
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import Post
+from infrastructure.postgres.models import Post, User
 from infrastructure.postgres.repositories.post_rep import (
     PostRepository,)
 from schemas.post_s import PostCreate
@@ -16,7 +16,14 @@ class CreatePostUseCase:
     def __init__(self, repository: PostRepository):
         self.repository = repository
 
-    async def execute(self, data: PostCreate) -> Post:
+    async def execute(self,
+                      data: PostCreate,
+                      current_user: User) -> Post:
+        if current_user.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="authentication required",
+            )
         post = Post(
             title=data.title,
             is_published=data.is_published,
@@ -24,7 +31,7 @@ class CreatePostUseCase:
             image=data.image,
             category_id=data.category_id,
             location_id=data.location_id,
-            author_id=data.author_id,
+            author_id=current_user.id,
         )
         try:
             return await self.repository.create(post)

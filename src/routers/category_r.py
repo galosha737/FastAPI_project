@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 from starlette import status
 
 from .dependencies.category_dep import (
@@ -9,6 +10,8 @@ from .dependencies.category_dep import (
     UpdateCategoryUseCaseDep,
 )
 from ..schemas.category_s import CategoryOut, CategoryUpdate, CategoryCreate
+from .dependencies.auth_dep import get_current_active_user
+from infrastructure.postgres.models.user_m import User
 
 
 router = APIRouter(prefix='/categories', tags=['Категории'])
@@ -50,8 +53,9 @@ async def get_category(
 async def create_category(
     use_case: CreateCategoryUseCaseDep,
     category_in: CategoryCreate,
+    current_user: Annotated[User, Depends(get_current_active_user)]
 ):
-    return await use_case.execute(category_in)
+    return await use_case.execute(category_in, current_user)
 
 
 @router.put(
@@ -64,6 +68,7 @@ async def update_category(
     use_case: UpdateCategoryUseCaseDep,
     category_id: int,
     category_in: CategoryUpdate,
+    current_user: Annotated[User, Depends(get_current_active_user)]
 ):
     return await use_case.execute(category_id, category_in)
 
@@ -76,5 +81,6 @@ async def update_category(
 async def delete_category(
     use_case: DeleteCategoryUseCaseDep,
     category_id: int,
+    current_user: Annotated[User, Depends(get_current_active_user)]
 ):
     await use_case.execute(category_id)

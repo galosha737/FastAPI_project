@@ -6,7 +6,7 @@ from exceptions.database import (
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import Comment
+from infrastructure.postgres.models import Comment, User
 from infrastructure.postgres.repositories.comment_rep import (
     CommentRepository,)
 from schemas.comment_s import CommentUpdate
@@ -18,9 +18,15 @@ class UpdateCommentUseCase:
 
     async def execute(self,
                       comment_id: int,
-                      data: CommentUpdate
+                      data: CommentUpdate,
+                      current_user: User
                       ) -> Comment:
         comment = await self.repository.get(comment_id)
+        if comment.author_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not the author of this comment",
+            )
         if comment is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

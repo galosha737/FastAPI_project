@@ -24,7 +24,6 @@ class CommentBase(BaseModel):
 
 class CommentCreate(CommentBase):
     post_id: Annotated[int, Field(gt=0)]
-    author_id: Annotated[int, Field(gt=0)]
 
 
 class CommentUpdate(BaseModel):
@@ -48,5 +47,6 @@ class CommentUpdate(BaseModel):
 class CommentOut(CommentCreate):
     id: int
     created_at: datetime
+    author_id: int
 
     model_config = ConfigDict(from_attributes=True)

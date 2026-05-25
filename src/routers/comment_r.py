@@ -1,6 +1,9 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 from starlette import status
 
+from infrastructure.postgres.models.user_m import User
+from .dependencies.auth_dep import get_current_active_user
 from .dependencies.comment_dep import (
     CreateCommentUseCaseDep,
     DeleteCommentUseCaseDep,
@@ -50,8 +53,10 @@ async def get_comment(
 async def create_comment(
     use_case: CreateCommentUseCaseDep,
     comment_in: CommentCreate,
+    current_user: Annotated[User, Depends(get_current_active_user)]
+
 ):
-    return await use_case.execute(comment_in)
+    return await use_case.execute(comment_in, current_user)
 
 
 @router.put(
@@ -64,9 +69,9 @@ async def update_comment(
     use_case: UpdateCommentUseCaseDep,
     comment_id: int,
     comment_in: CommentUpdate,
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ):
-    return await use_case.execute(comment_id, comment_in)
-
+    return await use_case.execute(comment_id, comment_in, current_user)
 
 
 @router.delete(
@@ -77,5 +82,6 @@ async def update_comment(
 async def delete_comment(
     use_case: DeleteCommentUseCaseDep,
     comment_id: int,
+    current_user: Annotated[User, Depends(get_current_active_user)]
 ):
-    await use_case.execute(comment_id)
+    await use_case.execute(comment_id, current_user)

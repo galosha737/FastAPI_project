@@ -3,11 +3,6 @@ from typing import Annotated
 
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, StrictBool, field_validator
 
-from .category_s import CategoryOut
-from .comment_s import CommentOut
-from .location_s import LocationOut
-from .user_s import UserOut
-
 
 class PostBase(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -30,7 +25,7 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
-    author_id: Annotated[int, Field(gt=0)]
+    pass
 
 
 class PostUpdate(BaseModel):
@@ -65,10 +60,3 @@ class PostOut(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
-
-
-class PostDetail(PostOut):
-    author: UserOut
-    category: CategoryOut | None = None
-    location: LocationOut | None = None
-    comments: list[CommentOut] = Field(default_factory=list)

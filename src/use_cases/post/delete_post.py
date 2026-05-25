@@ -8,13 +8,16 @@ from exceptions.database import (
 )
 from infrastructure.postgres.repositories.post_rep import (
     PostRepository,)
+from infrastructure.postgres.models import User
 
 
 class DeletePostUseCase:
     def __init__(self, repository: PostRepository):
         self.repository = repository
 
-    async def execute(self, post_id: int) -> None:
+    async def execute(self,
+                      post_id: int,
+                      current_user: User) -> None:
 
         if post_id <= 0:
             raise HTTPException(
@@ -26,6 +29,11 @@ class DeletePostUseCase:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Post with id={post_id} not found",
+            )
+        if post.author_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not the author of this post",
             )
         try:
             await self.repository.delete(post)

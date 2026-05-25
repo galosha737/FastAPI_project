@@ -8,19 +8,27 @@ from exceptions.database import (
 )
 from infrastructure.postgres.repositories.comment_rep import (
     CommentRepository,)
+from infrastructure.postgres.models import User
 
 
 class DeleteCommentUseCase:
     def __init__(self, repository: CommentRepository):
         self.repository = repository
 
-    async def execute(self, comment_id: int) -> None:
+    async def execute(self,
+                      comment_id: int,
+                      current_user: User) -> None:
         if comment_id <= 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="comment_id must be greater than 0",
             )
         comment = await self.repository.get(comment_id)
+        if comment.author_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not the author of this comment",
+            )
         if comment is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

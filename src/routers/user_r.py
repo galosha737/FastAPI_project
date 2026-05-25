@@ -1,6 +1,9 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 from starlette import status
 
+from infrastructure.postgres.models.user_m import User
+from .dependencies.auth_dep import get_current_active_user
 from ..schemas.user_s import UserOut, UserUpdate
 from .dependencies.user_dep import (
     DeleteUserUseCaseDep,
@@ -50,8 +53,9 @@ async def update_user(
     use_case: UpdateUserUseCaseDep,
     user_id: int,
     user_in: UserUpdate,
+    current_user: Annotated[User, Depends(get_current_active_user)]
 ):
-    return await use_case.execute(user_id, user_in)
+    return await use_case.execute(user_id, user_in, current_user)
 
 
 @router.delete(
@@ -62,5 +66,6 @@ async def update_user(
 async def delete_user(
     use_case: DeleteUserUseCaseDep,
     user_id: int,
+    current_user: Annotated[User, Depends(get_current_active_user)]
 ):
-    await use_case.execute(user_id)
+    await use_case.execute(user_id, current_user)
