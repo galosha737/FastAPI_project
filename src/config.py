@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: SecretStr
     POSTGRES_RECONNECT_INTERVAL_SEC: int
 
+    # Логи
+    LOG_LEVEL: str = "INFO"
+
     # URL не хранится, формируется динамически при каждом
     # settings.postgres_url
     @property

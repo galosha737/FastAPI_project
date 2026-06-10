@@ -30,6 +30,8 @@ services:
       - ./images:/images
     ports:
       - "8000:8000"
+    environment:
+      - POSTGRES_HOST=postgres
     networks:
       - app_network
     # Перенес содерживмое start.sh 

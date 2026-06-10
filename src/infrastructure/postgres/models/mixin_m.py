@@ -1,11 +1,11 @@
-from datetime import UTC, datetime
+from datetime import datetime
 
 from sqlalchemy import DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
 
 def time_now():
-    return datetime.now(UTC)
+    return datetime.now(datetime.UTC)
 
 
 class PubAndCreate:

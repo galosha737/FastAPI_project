@@ -1,5 +1,9 @@
+import os
 import asyncio
 from logging.config import fileConfig
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -9,6 +13,7 @@ from alembic import context
 from src.config import settings
 from src.infrastructure.postgres.database import Base
 
+
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.postgres_url)
 
@@ -16,6 +21,14 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
+
+# Временный код для проверки
+print("--- DEBUG: Начало ---")
+print(f"Target metadata: {target_metadata}")
+print(f"Tables in metadata: {list(target_metadata.tables.keys())}")
+for table_name, table_obj in target_metadata.tables.items():
+    print(f"  Table '{table_name}': {table_obj.columns.keys()}")
+print("--- DEBUG: Конец ---")
 
 
 def run_migrations_offline() -> None:

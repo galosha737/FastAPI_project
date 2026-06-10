@@ -55,7 +55,7 @@ async def create_location(
     location_in: LocationCreate,
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
-    return await use_case.execute(location_in, current_user)
+    return await use_case.execute(location_in)
 
 
 @router.put(
