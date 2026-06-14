@@ -4,7 +4,7 @@ from src.exceptions.database import (
     DatabaseError,
     DatabaseUnavailableError,
 )
-from src.infrastructure.postgres.models import Category
+from src.infrastructure.postgres.models import Category, User
 from src.infrastructure.postgres.repositories.category_rep import (
     CategoryRepository,)
 
@@ -13,14 +13,17 @@ class GetCategoryUseCase:
     def __init__(self, repository: CategoryRepository):
         self.repository = repository
 
-    async def execute(self, category_id: int) -> Category:
+    async def execute(self, category_id: int, current_user: User) -> Category:
         try:
             if category_id <= 0:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="category_id must be greater than 0",
                 )
-            category = await self.repository.get(category_id)
+            if current_user.role in ["admin", "super_admin"]:
+                category = await self.repository.get(category_id)
+            else:
+                category = await self.repository.get_published(category_id)
             if category is None:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,

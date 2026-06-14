@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from starlette import status
 
 from src.infrastructure.postgres.models.user_m import User
-from .dependencies.auth_dep import get_admin_user
+from .dependencies.auth_dep import get_admin_user, get_current_user
 from ..schemas.location_s import LocationOut, LocationUpdate, LocationCreate
 from .dependencies.location_dep import (
     CreateLocationUseCaseDep,
@@ -21,14 +21,15 @@ router = APIRouter(prefix='/locations', tags=['Местоположения'])
     "/",
     response_model=list[LocationOut],
     status_code=status.HTTP_200_OK,
-    summary="Местоположение:"
+    summary="Местоположения:"
 )
 async def get_locations(
     use_case: GetLocationListUseCaseDep,
+    current_user: Annotated[User, Depends(get_current_user)],
     skip: int = 0,
     limit: int = 10,
 ):
-    return await use_case.execute(skip=skip, limit=limit)
+    return await use_case.execute(skip=skip, limit=limit, current_user=current_user)
 
 
 @router.get(
@@ -39,9 +40,10 @@ async def get_locations(
 )
 async def get_location(
     use_case: GetLocationUseCaseDep,
+    current_user: Annotated[User, Depends(get_current_user)],
     location_id: int,
 ):
-    return await use_case.execute(location_id)
+    return await use_case.execute(location_id, current_user)
 
 
 @router.post(

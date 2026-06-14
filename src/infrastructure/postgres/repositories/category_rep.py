@@ -168,3 +168,39 @@ class CategoryRepository:
             operation=operation,
             details=str(err.orig),
         )
+
+    async def get_list_published(self, skip: int = 0, limit: int = 10) -> list[Category]:
+        try:
+            s = select(Category).where(Category.is_published).offset(skip).limit(limit)
+            result = await self.session.execute(s)
+            return list(result.scalars().all())
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Category",
+                operation="get_list_published",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Category",
+                operation="get_list_published",
+                details=str(err),
+            ) from err
+
+    async def get_published(self, location_id: int) -> Category | None:
+        try:
+            s = select(Category).where(Category.id == location_id, Category.is_published) 
+            result = await self.session.execute(s)
+            return result.scalar_one_or_none()
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Category",
+                operation="get_published",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Category",
+                operation="get_published",
+                details=str(err),
+            ) from err

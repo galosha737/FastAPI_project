@@ -25,10 +25,11 @@ router = APIRouter(prefix='/categories', tags=['Категории'])
 )
 async def get_categories(
     use_case: GetCategoryListUseCaseDep,
+    current_user: Annotated[User, Depends(get_current_user)],
     skip: int = 0,
     limit: int = 10,
 ):
-    return await use_case.execute(skip=skip, limit=limit)
+    return await use_case.execute(skip=skip, limit=limit, current_user=current_user)
 
 
 @router.get(
@@ -40,8 +41,9 @@ async def get_categories(
 async def get_category(
     use_case: GetCategoryUseCaseDep,
     category_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
 ):
-    return await use_case.execute(category_id)
+    return await use_case.execute(category_id, current_user=current_user)
 
 
 @router.post(
@@ -53,7 +55,6 @@ async def get_category(
 async def create_category(
     use_case: CreateCategoryUseCaseDep,
     category_in: CategoryCreate,
-    current_user: Annotated[User, Depends(get_current_user)],
     current_admin: Annotated[User, Depends(get_admin_user)]
 ):
     return await use_case.execute(category_in)

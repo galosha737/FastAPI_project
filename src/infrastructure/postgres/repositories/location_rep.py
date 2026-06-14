@@ -152,3 +152,42 @@ class LocationRepository:
             operation=operation,
             details=str(err.orig),
         )
+
+    async def get_list_published(self,
+                                 skip: int = 0,
+                                 limit: int = 10) -> list[Location]:
+        try:
+            s = select(Location).where(Location.is_published).offset(skip).limit(limit)
+            result = await self.session.execute(s)
+            return list(result.scalars().all())
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Location",
+                operation="get_list_published",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Location",
+                operation="get_list_published",
+                details=str(err),
+            ) from err
+        
+    async def get_published(self,
+                            location_id: int) -> Location | None:
+        try:
+            s = select(Location).where(Location.id == location_id, Location.is_published)
+            result = await self.session.execute(s)
+            return result.scalar_one_or_none()
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Location",
+                operation="get_published",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Location",
+                operation="get_published",
+                details=str(err),
+            ) from err

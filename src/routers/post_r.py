@@ -25,10 +25,11 @@ router = APIRouter(prefix='/posts', tags=['Посты'])
 )
 async def get_posts(
     use_case: GetPostListUseCaseDep,
+    current_user: Annotated[User, Depends(get_current_user)],
     skip: int = 0,
     limit: int = 10,
 ):
-    return await use_case.execute(skip=skip, limit=limit)
+    return await use_case.execute(skip=skip, limit=limit, current_user=current_user)
 
 
 @router.get(
@@ -39,9 +40,10 @@ async def get_posts(
 )
 async def get_post(
     use_case: GetPostUseCaseDep,
+    current_user: Annotated[User, Depends(get_current_user)],
     post_id: int,
 ):
-    return await use_case.execute(post_id)
+    return await use_case.execute(post_id, current_user=current_user)
 
 
 @router.post(

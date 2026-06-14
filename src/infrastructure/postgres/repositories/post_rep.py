@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 
@@ -149,3 +149,52 @@ class PostRepository:
             operation=operation,
             details=str(err.orig),
         )
+    
+    async def get_list_for_user(self, user_id: int, skip: int = 0, limit: int = 10) -> list[Post]:
+        try:
+            s = select(Post).where(
+                or_(
+                    Post.author_id == user_id,
+                    and_(Post.is_published, Post.author_id != user_id)
+                )
+            ).offset(skip).limit(limit)
+            result = await self.session.execute(s)
+            return list(result.scalars().all())
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Post",
+                operation="get_list_for_user",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Post",
+                operation="get_list_for_user",
+                details=str(err),
+            ) from err
+
+    async def get_for_user(self, post_id: int, user_id: int) -> Post | None:
+        try:
+            s = select(Post).where(
+                and_(
+                    Post.id == post_id,
+                    or_(
+                        Post.author_id == user_id,
+                        Post.is_published
+                    )
+                )
+            )
+            result = await self.session.execute(s)
+            return result.scalar_one_or_none()
+        except OperationalError as err:
+            raise DatabaseUnavailableError(
+                entity="Post",
+                operation="get_for_user",
+                details=str(err),
+            ) from err
+        except SQLAlchemyError as err:
+            raise DatabaseError(
+                entity="Post",
+                operation="get_for_user",
+                details=str(err),
+            ) from err
