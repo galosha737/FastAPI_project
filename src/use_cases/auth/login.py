@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 
-from src.auth.security import create_access_token, verify_password
+from src.auth.security import create_access_token, verify_password, create_refresh_token
 from src.exceptions.database import DatabaseError, DatabaseUnavailableError
 from src.infrastructure.postgres.repositories.user_rep import UserRepository
 from src.schemas.token import Token
@@ -22,9 +22,11 @@ class LoginUserUseCase:
                 )
 
             access_token = create_access_token(data={"sub": str(user.id)})
+            refresh_token = create_refresh_token(data={"sub": str(user.id)})
 
             return Token(
                 access_token=access_token,
+                refresh_token=refresh_token,
                 token_type="bearer",
             )
 

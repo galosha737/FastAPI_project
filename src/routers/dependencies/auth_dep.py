@@ -3,11 +3,12 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from src.auth.security import decode_access_token
+from src.auth.security import decode_token
 from src.infrastructure.postgres.models.user_m import User
 from src.use_cases.auth.login import LoginUserUseCase
+from src.use_cases.auth.refresh import RefreshTokenUseCase
 from src.routers.dependencies.user_dep import UserRepositoryDep
-
+from src.schemas.token import TokenPayload
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
@@ -24,6 +25,18 @@ LoginUserUseCaseDep = Annotated[
 ]
 
 
+def get_refresh_token_use_case(
+    repository: UserRepositoryDep,
+) -> RefreshTokenUseCase:
+    return RefreshTokenUseCase(repository)
+
+
+RefreshTokenUseCaseDep = Annotated[
+    RefreshTokenUseCase,
+    Depends(get_refresh_token_use_case),
+]
+
+
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     repository: UserRepositoryDep,
@@ -35,7 +48,7 @@ async def get_current_user(
     )
 
     try:
-        payload = decode_access_token(token)
+        payload = decode_token(token)
         user_id = payload.get("sub")
 
         if user_id is None:
