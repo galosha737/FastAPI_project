@@ -1,10 +1,10 @@
 from fastapi import HTTPException, status
 
-from infrastructure.postgres.models import Location
-from infrastructure.postgres.repositories.location_rep import (
+from src.infrastructure.postgres.models import Location
+from src.infrastructure.postgres.repositories.location_rep import (
     LocationRepository,)
-from schemas.location_s import LocationCreate
-from exceptions.database import (
+from src.schemas.location_s import LocationCreate
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
@@ -17,16 +17,16 @@ class CreateLocationUseCase:
         self.repository = repository
 
     async def execute(self, data: LocationCreate) -> Location:
-        name = data.name.strip()
+        title = data.title
 
-        if not name:
+        if not title:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Location name cannot be empty",
+                detail="Location title cannot be empty",
             )
         
         location = Location(
-            name=data.name,
+            title=data.title,
             is_published=data.is_published,
         )
         try:

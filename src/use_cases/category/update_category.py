@@ -1,15 +1,15 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import Category
-from infrastructure.postgres.repositories.category_rep import (
+from src.infrastructure.postgres.models import Category
+from src.infrastructure.postgres.repositories.category_rep import (
     CategoryRepository,)
-from schemas.category_s import CategoryUpdate
+from src.schemas.category_s import CategoryUpdate
 
 
 class UpdateCategoryUseCase:

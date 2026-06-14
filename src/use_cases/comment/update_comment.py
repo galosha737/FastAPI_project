@@ -1,15 +1,15 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import Comment, User
-from infrastructure.postgres.repositories.comment_rep import (
+from src.infrastructure.postgres.models import Comment, User
+from src.infrastructure.postgres.repositories.comment_rep import (
     CommentRepository,)
-from schemas.comment_s import CommentUpdate
+from src.schemas.comment_s import CommentUpdate
 
 
 class UpdateCommentUseCase:
@@ -22,15 +22,15 @@ class UpdateCommentUseCase:
                       current_user: User
                       ) -> Comment:
         comment = await self.repository.get(comment_id)
-        if comment.author_id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You are not the author of this comment",
-            )
         if comment is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Comment with id={comment_id} not found",
+            )
+        if comment.author_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not the author of this comment",
             )
         try:
             update_data = data.model_dump(exclude_unset=True)

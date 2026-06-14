@@ -1,15 +1,15 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import User
-from infrastructure.postgres.repositories.user_rep import UserRepository
-from schemas.user_s import UserCreate
-from auth.security import get_hash_password
+from src.infrastructure.postgres.models import User
+from src.infrastructure.postgres.repositories.user_rep import UserRepository
+from src.schemas.user_s import UserCreate
+from src.auth.security import get_hash_password
 
 
 class CreateUserUseCase:
@@ -36,6 +36,7 @@ class CreateUserUseCase:
             bio_info=data.bio_info,
             first_name=data.first_name,
             last_name=data.last_name,
+            role="user",
         )
 
         try:

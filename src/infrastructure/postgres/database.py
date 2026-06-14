@@ -31,9 +31,6 @@ class Base(DeclarativeBase):
     pass
 
 
-import src.infrastructure.postgres.models
-
-
 # Определяем зависимость
 async def get_db() -> AsyncIterator[AsyncSession]:
     async with SessionLocal() as session:

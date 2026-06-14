@@ -3,13 +3,13 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.postgres.database import get_db
-from infrastructure.postgres.repositories.post_rep import PostRepository
-from use_cases.post.create_post import CreatePostUseCase
-from use_cases.post.update_post import UpdatePostUseCase
-from use_cases.post.delete_post import DeletePostUseCase
-from use_cases.post.get_post import GetPostUseCase
-from use_cases.post.get_list_post import GetPostListUseCase
+from src.infrastructure.postgres.database import get_db
+from src.infrastructure.postgres.repositories.post_rep import PostRepository
+from src.use_cases.post.create_post import CreatePostUseCase
+from src.use_cases.post.update_post import UpdatePostUseCase
+from src.use_cases.post.delete_post import DeletePostUseCase
+from src.use_cases.post.get_post import GetPostUseCase
+from src.use_cases.post.get_list_post import GetPostListUseCase
 
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]

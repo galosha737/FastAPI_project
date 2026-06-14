@@ -6,12 +6,13 @@ from starlette import status
 
 from src.schemas.token import Token
 from src.schemas.user_s import UserOut, UserCreate
+from src.schemas.user_s import ChangeUserRoleRequest
 from .dependencies.auth_dep import LoginUserUseCaseDep
-from infrastructure.postgres.models import User
-from .dependencies.auth_dep import get_current_active_user
-from .dependencies.user_dep import CreateUserUseCaseDep
+from src.infrastructure.postgres.models import User
+from .dependencies.auth_dep import get_current_user, get_super_admin_user
+from .dependencies.user_dep import CreateUserUseCaseDep, ChangeUserRoleUseCaseDep
 
-router = APIRouter(prefix="/auth", tags=["Авторизация"])
+router = APIRouter(prefix="/auth", tags=["Авторизация и смена роли"])
 
 
 @router.post(
@@ -50,6 +51,21 @@ async def login(
         summary="Текущий пользователь",
 )
 async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
     return current_user
+
+
+@router.patch(
+    "/{user_id}/role",
+    response_model=UserOut,
+    status_code=status.HTTP_200_OK,
+    summary="Изменить роль пользователя (только суперадмин):"
+)
+async def change_user_role(
+    use_case: ChangeUserRoleUseCaseDep,
+    user_id: int,
+    user_in: ChangeUserRoleRequest,
+    super_admin: Annotated[User, Depends(get_super_admin_user)]
+):
+    return await use_case.execute(user_id, user_in, super_admin)

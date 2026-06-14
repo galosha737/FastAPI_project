@@ -1,15 +1,15 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import Post, User
-from infrastructure.postgres.repositories.post_rep import (
+from src.infrastructure.postgres.models import Post, User
+from src.infrastructure.postgres.repositories.post_rep import (
     PostRepository,)
-from schemas.post_s import PostUpdate
+from src.schemas.post_s import PostUpdate
 
 
 class UpdatePostUseCase:
@@ -22,15 +22,15 @@ class UpdatePostUseCase:
                       current_user: User,
                       ) -> Post:
         post = await self.repository.get(post_id)
-        if post.author_id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You are not the author of this post",
-            )
         if post is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Post with id={post_id} not found",
+            )
+        if post.author_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not the author of this post",
             )
         try:
             update_data = data.model_dump(exclude_unset=True)

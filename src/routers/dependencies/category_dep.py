@@ -3,13 +3,13 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.postgres.database import get_db
-from infrastructure.postgres.repositories.category_rep import CategoryRepository
-from use_cases.category.create_category import CreateCategoryUseCase
-from use_cases.category.update_category import UpdateCategoryUseCase
-from use_cases.category.delete_category import DeleteCategoryUseCase
-from use_cases.category.get_category import GetCategoryUseCase
-from use_cases.category.get_list_categories import GetCategoryListUseCase
+from src.infrastructure.postgres.database import get_db
+from src.infrastructure.postgres.repositories.category_rep import CategoryRepository
+from src.use_cases.category.create_category import CreateCategoryUseCase
+from src.use_cases.category.update_category import UpdateCategoryUseCase
+from src.use_cases.category.delete_category import DeleteCategoryUseCase
+from src.use_cases.category.get_category import GetCategoryUseCase
+from src.use_cases.category.get_list_categories import GetCategoryListUseCase
 
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]

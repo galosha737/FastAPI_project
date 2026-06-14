@@ -1,15 +1,15 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import Post, User
-from infrastructure.postgres.repositories.post_rep import (
+from src.infrastructure.postgres.models import Post, User
+from src.infrastructure.postgres.repositories.post_rep import (
     PostRepository,)
-from schemas.post_s import PostCreate
+from src.schemas.post_s import PostCreate
 
 
 class CreatePostUseCase:

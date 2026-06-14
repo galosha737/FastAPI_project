@@ -3,13 +3,13 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.postgres.database import get_db
-from infrastructure.postgres.repositories.location_rep import LocationRepository
-from use_cases.location.create_location import CreateLocationUseCase
-from use_cases.location.update_location import UpdateLocationUseCase
-from use_cases.location.delete_location import DeleteLocationUseCase
-from use_cases.location.get_location import GetLocationUseCase
-from use_cases.location.get_list_location import GetLocationListUseCase
+from src.infrastructure.postgres.database import get_db
+from src.infrastructure.postgres.repositories.location_rep import LocationRepository
+from src.use_cases.location.create_location import CreateLocationUseCase
+from src.use_cases.location.update_location import UpdateLocationUseCase
+from src.use_cases.location.delete_location import DeleteLocationUseCase
+from src.use_cases.location.get_location import GetLocationUseCase
+from src.use_cases.location.get_list_location import GetLocationListUseCase
 
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]

@@ -1,11 +1,11 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DatabaseError,
     DatabaseUnavailableError,
 )
-from infrastructure.postgres.models import Comment
-from infrastructure.postgres.repositories.comment_rep import (
+from src.infrastructure.postgres.models import Comment
+from src.infrastructure.postgres.repositories.comment_rep import (
     CommentRepository,)
 
 

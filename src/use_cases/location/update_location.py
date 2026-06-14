@@ -1,15 +1,15 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import Location
-from infrastructure.postgres.repositories.location_rep import (
+from src.infrastructure.postgres.models import Location
+from src.infrastructure.postgres.repositories.location_rep import (
     LocationRepository,)
-from schemas.location_s import LocationUpdate
+from src.schemas.location_s import LocationUpdate
 
 
 class UpdateLocationUseCase:

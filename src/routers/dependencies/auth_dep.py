@@ -3,10 +3,10 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from auth.security import decode_access_token
-from infrastructure.postgres.models import User
-from use_cases.auth.login import LoginUserUseCase
-from .user_dep import UserRepositoryDep
+from src.auth.security import decode_access_token
+from src.infrastructure.postgres.models.user_m import User
+from src.use_cases.auth.login import LoginUserUseCase
+from src.routers.dependencies.user_dep import UserRepositoryDep
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -51,12 +51,23 @@ async def get_current_user(
     return user
 
 
-async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> User:
-    if not current_user.active:
+async def get_admin_user(
+        current_user: Annotated[User, Depends(get_current_user)]) -> User:
+    if current_user.role not in ["admin", "super_admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user",
+            detail="Operation not allowed for non-admin users"
         )
     return current_user
+
+
+async def get_super_admin_user(
+        current_user: Annotated[User, Depends(get_current_user)]) -> User:
+    if current_user.role != "super_admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operation not allowed for non-super-admin users"
+        )
+    return current_user
+
+SuperAdminDep = Annotated[User, Depends(get_super_admin_user)]

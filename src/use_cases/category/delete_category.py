@@ -1,12 +1,12 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.repositories.category_rep import (
+from src.infrastructure.postgres.repositories.category_rep import (
     CategoryRepository,)
 
 
@@ -19,7 +19,7 @@ class DeleteCategoryUseCase:
         if category_id <= 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="comment_id must be greater than 0",
+                detail="category_id must be greater than 0",
             )
         category = await self.repository.get(category_id)
         if category is None:

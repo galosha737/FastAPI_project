@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
 
-from auth.security import create_access_token, verify_password
-from exceptions.database import DatabaseError, DatabaseUnavailableError
-from infrastructure.postgres.repositories.user_rep import UserRepository
+from src.auth.security import create_access_token, verify_password
+from src.exceptions.database import DatabaseError, DatabaseUnavailableError
+from src.infrastructure.postgres.repositories.user_rep import UserRepository
 from src.schemas.token import Token
 
 
@@ -19,12 +19,6 @@ class LoginUserUseCase:
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid username or password",
                     headers={"WWW-Authenticate": "Bearer"},
-                )
-
-            if not user.active:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Inactive user",
                 )
 
             access_token = create_access_token(data={"sub": str(user.id)})

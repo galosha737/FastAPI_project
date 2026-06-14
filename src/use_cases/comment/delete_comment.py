@@ -1,14 +1,14 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.repositories.comment_rep import (
+from src.infrastructure.postgres.repositories.comment_rep import (
     CommentRepository,)
-from infrastructure.postgres.models import User
+from src.infrastructure.postgres.models import User
 
 
 class DeleteCommentUseCase:
@@ -24,16 +24,17 @@ class DeleteCommentUseCase:
                 detail="comment_id must be greater than 0",
             )
         comment = await self.repository.get(comment_id)
-        if comment.author_id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You are not the author of this comment",
-            )
         if comment is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Comment with id={comment_id} not found",
             )
+        if comment.author_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not the author of this comment",
+            )
+
         try:
             await self.repository.delete(comment)
         except DataConflictError as err:

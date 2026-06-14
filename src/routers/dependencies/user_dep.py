@@ -2,13 +2,14 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...infrastructure.postgres.database import get_db
-from ...infrastructure.postgres.repositories.user_rep import UserRepository
-from use_cases.user.create_user import CreateUserUseCase
-from use_cases.user.update_user import UpdateUserUseCase
-from use_cases.user.delete_user import DeleteUserUseCase
-from use_cases.user.get_user import GetUserUseCase
-from use_cases.user.get_list_user import GetUserListUseCase
+from src.infrastructure.postgres.database import get_db
+from src.infrastructure.postgres.repositories.user_rep import UserRepository
+from src.use_cases.user.create_user import CreateUserUseCase
+from src.use_cases.user.update_user import UpdateUserUseCase
+from src.use_cases.user.delete_user import DeleteUserUseCase
+from src.use_cases.user.get_user import GetUserUseCase
+from src.use_cases.user.get_list_user import GetUserListUseCase
+from src.use_cases.user.change_user_role import ChangeUserRoleUseCase
 
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
@@ -52,6 +53,12 @@ def get_delete_user_use_case(
     return DeleteUserUseCase(repository)
 
 
+def get_change_user_role_use_case(
+    repository: UserRepositoryDep,
+) -> ChangeUserRoleUseCase:
+    return ChangeUserRoleUseCase(repository)
+
+
 GetUserListUseCaseDep = Annotated[
     GetUserListUseCase,
     Depends(get_user_list_use_case),
@@ -75,4 +82,9 @@ UpdateUserUseCaseDep = Annotated[
 DeleteUserUseCaseDep = Annotated[
     DeleteUserUseCase,
     Depends(get_delete_user_use_case),
+]
+
+ChangeUserRoleUseCaseDep = Annotated[
+    ChangeUserRoleUseCase,
+    Depends(get_change_user_role_use_case),
 ]

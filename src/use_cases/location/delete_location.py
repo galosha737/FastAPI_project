@@ -1,12 +1,12 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.repositories.location_rep import (
+from src.infrastructure.postgres.repositories.location_rep import (
     LocationRepository,)
 
 

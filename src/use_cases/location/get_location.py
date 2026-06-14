@@ -1,11 +1,11 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DatabaseError,
     DatabaseUnavailableError,
 )
-from infrastructure.postgres.models import Location
-from infrastructure.postgres.repositories.location_rep import LocationRepository
+from src.infrastructure.postgres.models import Location
+from src.infrastructure.postgres.repositories.location_rep import LocationRepository
 
 
 class GetLocationUseCase:

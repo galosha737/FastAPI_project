@@ -10,16 +10,16 @@ class LocationBase(BaseModel):
         extra="forbid",
     )
 
-    name: Annotated[str, Field(min_length=1, max_length=255)]
+    title: Annotated[str, Field(min_length=1, max_length=255)]
     is_published: StrictBool = False
 
-    @field_validator("name", mode="before")
+    @field_validator("title", mode="before")
     @classmethod
     def validate_name(cls, value):
         if isinstance(value, str):
             value = value.strip()
         if not value:
-            raise ValueError("Location name cannot be empty")
+            raise ValueError("Location title cannot be empty")
         return value
 
 
@@ -33,10 +33,10 @@ class LocationUpdate(BaseModel):
         extra="forbid",
     )
 
-    name: Annotated[str | None, Field(default=None, min_length=1, max_length=255)]
+    title: Annotated[str | None, Field(default=None, min_length=1, max_length=255)]
     is_published: StrictBool | None = None
 
-    @field_validator("name", mode="before")
+    @field_validator("title", mode="before")
     @classmethod
     def empty_name_to_none(cls, value):
         if isinstance(value, str):

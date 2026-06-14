@@ -10,8 +10,8 @@ from .dependencies.category_dep import (
     UpdateCategoryUseCaseDep,
 )
 from ..schemas.category_s import CategoryOut, CategoryUpdate, CategoryCreate
-from .dependencies.auth_dep import get_current_active_user
-from infrastructure.postgres.models.user_m import User
+from .dependencies.auth_dep import get_current_user, get_admin_user
+from src.infrastructure.postgres.models.user_m import User
 
 
 router = APIRouter(prefix='/categories', tags=['Категории'])
@@ -53,9 +53,10 @@ async def get_category(
 async def create_category(
     use_case: CreateCategoryUseCaseDep,
     category_in: CategoryCreate,
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    current_user: Annotated[User, Depends(get_current_user)],
+    current_admin: Annotated[User, Depends(get_admin_user)]
 ):
-    return await use_case.execute(category_in, current_user)
+    return await use_case.execute(category_in)
 
 
 @router.put(
@@ -68,7 +69,8 @@ async def update_category(
     use_case: UpdateCategoryUseCaseDep,
     category_id: int,
     category_in: CategoryUpdate,
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    current_user: Annotated[User, Depends(get_current_user)],
+    current_admin: Annotated[User, Depends(get_admin_user)]
 ):
     return await use_case.execute(category_id, category_in)
 
@@ -81,6 +83,7 @@ async def update_category(
 async def delete_category(
     use_case: DeleteCategoryUseCaseDep,
     category_id: int,
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    current_user: Annotated[User, Depends(get_current_user)],
+    current_admin: Annotated[User, Depends(get_admin_user)]
 ):
     await use_case.execute(category_id)

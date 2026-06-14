@@ -1,15 +1,15 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.models import Comment, User
-from infrastructure.postgres.repositories.comment_rep import (
+from src.infrastructure.postgres.models import Comment, User
+from src.infrastructure.postgres.repositories.comment_rep import (
     CommentRepository,)
-from schemas.comment_s import CommentCreate
+from src.schemas.comment_s import CommentCreate
 
 
 class CreateCommentUseCase:

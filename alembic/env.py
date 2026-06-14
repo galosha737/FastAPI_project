@@ -1,24 +1,38 @@
-import os
 import asyncio
-from logging.config import fileConfig
-from dotenv import load_dotenv
 
-load_dotenv()
-
-from sqlalchemy import pool
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy import engine_from_config, pool
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from alembic import context
+
+from logging.config import fileConfig
+
 from src.config import settings
 from src.infrastructure.postgres.database import Base
 
+try:
+    # Убедитесь, что пути соответствуют структуре внутри контейнера app
+    # и что PYTHONPATH позволяет их импортировать
+    from src.infrastructure.postgres.models.user_m import User # Или как у вас называется файл и класс
+    from src.infrastructure.postgres.models.post_m import Post
+    from src.infrastructure.postgres.models.location_m import Location
+    from src.infrastructure.postgres.models.category_m import Category
+    from src.infrastructure.postgres.models.comment_m import Comment
+    # Импортируйте ВСЕ модели, которые должны участвовать в autogenerate
+except ImportError as e:
+    print(f"CRITICAL ERROR: Could not import model modules: {e}")
+    print("Check your PYTHONPATH and import paths in env.py!")
+    # Завершаем процесс с ошибкой, чтобы не продолжать с пустым metadata
+    raise e
+
+CREATE_SCHEMA_QUERY = f"CREATE SCHEMA IF NOT EXISTS {settings.POSTGRES_SCHEMA};"
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.postgres_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+config.set_main_option("sqlalchemy.url", settings.postgres_url)
 
 target_metadata = Base.metadata
 
@@ -31,7 +45,11 @@ for table_name, table_obj in target_metadata.tables.items():
 print("--- DEBUG: Конец ---")
 
 
-def run_migrations_offline() -> None:
+def filter_foreign_schemas(name, type_, parent_names):
+    return type_ != "schema" or name == settings.POSTGRES_SCHEMA
+
+
+def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -44,34 +62,42 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def do_run_migrations(connection: Connection) -> None:
+def do_run_migrations(connection):
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
+        version_table_schema=settings.POSTGRES_SCHEMA,
+        include_schemas=True,
+        include_name=filter_foreign_schemas,
     )
 
     with context.begin_transaction():
+        context.execute(CREATE_SCHEMA_QUERY)
         context.run_migrations()
 
 
-async def run_async_migrations() -> None:
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+async def run_migrations_online(engine: AsyncEngine):
+    """Run migrations in 'online' mode.
 
-    async with connectable.connect() as connection:
+    In this scenario we need to create an Engine
+    and associate a connection with the context.
+
+    """
+
+    async with engine.connect() as connection:
         await connection.run_sync(do_run_migrations)
-
-    await connectable.dispose()
-
-
-def run_migrations_online() -> None:
-    asyncio.run(run_async_migrations())
 
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online()
+    connectable = AsyncEngine(
+        engine_from_config(
+            config.get_section(config.config_ini_section),
+            prefix="sqlalchemy.",
+            poolclass=pool.NullPool,
+            future=True,
+        ),
+    )
+
+    asyncio.run(run_migrations_online(connectable))

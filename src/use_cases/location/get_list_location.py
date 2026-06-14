@@ -1,9 +1,9 @@
 from fastapi import HTTPException, status
 
-from infrastructure.postgres.models import Location
-from infrastructure.postgres.repositories.location_rep import (
+from src.infrastructure.postgres.models import Location
+from src.infrastructure.postgres.repositories.location_rep import (
     LocationRepository,)
-from exceptions.database import (
+from src.exceptions.database import (
     DatabaseError,
     DatabaseUnavailableError,
 )

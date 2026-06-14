@@ -1,8 +1,8 @@
-"""initial_migration
+"""Initial
 
-Revision ID: e4bee51c2cfe
+Revision ID: 37ce73b20ab8
 Revises: 
-Create Date: 2026-06-09 10:56:37.423270
+Create Date: 2026-06-13 10:32:58.255355
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'e4bee51c2cfe'
+revision: str = '37ce73b20ab8'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -35,7 +35,7 @@ def upgrade() -> None:
     )
     op.create_table('locations',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('title', sa.String(length=100), nullable=False),
     sa.Column('is_published', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
@@ -49,7 +49,7 @@ def upgrade() -> None:
     sa.Column('email', sa.String(), nullable=False),
     sa.Column('bio_info', sa.Text(), nullable=True),
     sa.Column('password', sa.String(), nullable=False),
-    sa.Column('active', sa.Boolean(), nullable=False),
+    sa.Column('role', sa.String(), nullable=False),
     sa.Column('date_joined', sa.DateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('username')
@@ -74,9 +74,10 @@ def upgrade() -> None:
     op.create_table('comments',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('text', sa.Text(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('author_id', sa.Integer(), nullable=False),
     sa.Column('post_id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['author_id'], ['users.id'], ),
     sa.ForeignKeyConstraint(['post_id'], ['posts.id'], ),
     sa.PrimaryKeyConstraint('id')

@@ -2,8 +2,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from starlette import status
 
-from infrastructure.postgres.models.user_m import User
-from .dependencies.auth_dep import get_current_active_user
+from src.infrastructure.postgres.models.user_m import User
+from .dependencies.auth_dep import get_admin_user
 from ..schemas.location_s import LocationOut, LocationUpdate, LocationCreate
 from .dependencies.location_dep import (
     CreateLocationUseCaseDep,
@@ -53,7 +53,7 @@ async def get_location(
 async def create_location(
     use_case: CreateLocationUseCaseDep,
     location_in: LocationCreate,
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    current_admin: Annotated[User, Depends(get_admin_user)]
 ):
     return await use_case.execute(location_in)
 
@@ -68,9 +68,9 @@ async def update_location(
     use_case: UpdateLocationUseCaseDep,
     location_id: int,
     location_in: LocationUpdate,
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    current_admin: Annotated[User, Depends(get_admin_user)]
 ):
-    return await use_case.execute(location_id, location_in, current_user)
+    return await use_case.execute(location_id, location_in)
 
 
 @router.delete(
@@ -81,7 +81,7 @@ async def update_location(
 async def delete_location(
     use_case: DeleteLocationUseCaseDep,
     location_id: int,
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    current_admin: Annotated[User, Depends(get_admin_user)]
 
 ):
-    await use_case.execute(location_id, current_user)
+    await use_case.execute(location_id)

@@ -4,7 +4,7 @@ FROM python:3.13-slim
 # убираем буферизацию вывода
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/src
+    PYTHONPATH=/app
 
 WORKDIR /app
 

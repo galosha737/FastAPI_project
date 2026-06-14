@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     # Логи
     LOG_LEVEL: str = "INFO"
 
+    # Админ
+    SUPERUSER_USERNAME: str = "Boss737"
+    SUPERUSER_EMAIL: str = "boss@example.com"
+    SUPERUSER_PASSWORD: str = "123123"
+    ALLOWED_ROLES: list
+
     # URL не хранится, формируется динамически при каждом
     # settings.postgres_url
     @property

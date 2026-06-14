@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 
 from ..models.user_m import User
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
@@ -66,7 +66,7 @@ class UserRepository:
                 operation="get",
                 details=str(err),
             ) from err
-    
+
     async def create(self, user: User) -> User:
         try:
             self.session.add(user)

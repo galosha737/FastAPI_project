@@ -1,14 +1,14 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
     ForeignKeyConflictError,
 )
-from infrastructure.postgres.repositories.post_rep import (
+from src.infrastructure.postgres.repositories.post_rep import (
     PostRepository,)
-from infrastructure.postgres.models import User
+from src.infrastructure.postgres.models import User
 
 
 class DeletePostUseCase:

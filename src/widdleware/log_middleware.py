@@ -3,7 +3,7 @@ import time
 import uuid
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import Response, JSONResponse
 
 from src.logging_config import request_id_var
 
@@ -28,8 +28,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             "user_agent": request.headers.get("user-agent", "-"),
         })
 
+        response: Response | None = None
+
         try:
-            response: Response = await call_next(request)
+            response = await call_next(request)
         except Exception as e:
             logging.error({
                 "event": "Unhandled exception during request processing",
@@ -38,19 +40,25 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 "exception": str(e),
                 "traceback": str(e.__traceback__)
             })
-            raise
+            response = JSONResponse(
+                status_code=500,
+                content={"detail": "Internal Server Error"},
+            )
         finally:
             request_id_var.reset(token)
 
             process_time = time.time() - start_time
 
+            status_code = response.status_code if response else "N/A"
+            content_length = response.headers.get("content-length", "-") if response else "-"
+
             logging.info({
                 "event": "Request handled",
                 "method": request.method,
                 "path": request.url.path,
-                "status_code": response.status_code,
+                "status_code": status_code,
                 "process_time": f"{process_time:.4f}s",
-                "content_length": response.headers.get("content-length", "-"),
+                "content_length": content_length,
                 "user_agent": request.headers.get("user-agent", "-"),
                 "client_host": request.client.host if request.client else "-",
                 "query_params": dict(request.query_params),

@@ -1,11 +1,11 @@
 from fastapi import HTTPException, status
 
-from exceptions.database import (
+from src.exceptions.database import (
     DatabaseError,
     DatabaseUnavailableError,
 )
-from infrastructure.postgres.models import Category
-from infrastructure.postgres.repositories.category_rep import (
+from src.infrastructure.postgres.models import Category
+from src.infrastructure.postgres.repositories.category_rep import (
     CategoryRepository,)
 
 

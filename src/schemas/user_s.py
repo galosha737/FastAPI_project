@@ -29,6 +29,11 @@ class UserCreate(UserUpdate):
 class UserOut(UserUpdate):
     id: int
     username: str
-    active: bool
     date_joined: datetime
+    role: str
     model_config = ConfigDict(from_attributes=True)
+
+
+# Схема для изменения роли
+class ChangeUserRoleRequest(BaseModel):
+    role: Annotated[str, Field(..., pattern="^(user|admin|super_admin)$")]
