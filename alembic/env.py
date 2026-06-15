@@ -7,7 +7,7 @@ from alembic import context
 
 from logging.config import fileConfig
 
-from src.config import settings
+from src.core.config import settings
 from src.infrastructure.postgres.database import Base
 
 try:

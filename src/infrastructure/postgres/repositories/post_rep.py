@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 
 from ..models.post_m import Post
 from ..models.comment_m import Comment
-from src.exceptions.database import (
+from src.domain.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,

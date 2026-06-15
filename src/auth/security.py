@@ -4,7 +4,7 @@ from typing import Any
 from jose import jwt, JWTError
 from pwdlib import PasswordHash
 
-from src.config import settings
+from src.core.config import settings
 
 # Объект для работы с хешированием пароля
 password_hash = PasswordHash.recommended()

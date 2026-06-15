@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
-from src.config import settings
+from src.core.config import settings
 
 # Строка подключения
 SQLALCHEMY_DATABASE_URL = settings.postgres_url

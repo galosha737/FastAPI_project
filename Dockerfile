@@ -18,6 +18,5 @@ RUN poetry config virtualenvs.create false && poetry install --no-root
 COPY ./src /app/src
 COPY ./alembic /app/alembic
 COPY ./alembic.ini /app/
-COPY ./main.py /app/
 
 EXPOSE 8000

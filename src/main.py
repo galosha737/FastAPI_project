@@ -1,0 +1,44 @@
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from starlette.middleware.cors import CORSMiddleware
+
+from src.core.config import IMAGES_DIR, STATIC_IMAGES_URL
+from src.core.logging_config import setup_logging
+from src.presentation.routers import auth_r, category_r, comment_r, location_r, post_r
+from src.presentation.routers import user_r
+from src.presentation.widdleware.log_middleware import LoggingMiddleware
+
+
+def create_app() -> FastAPI:
+    setup_logging()
+
+    app = FastAPI()
+
+    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+    app.mount(
+        STATIC_IMAGES_URL,
+        StaticFiles(directory=str(IMAGES_DIR)),
+        name="static_images",
+    )
+
+    app.add_middleware(LoggingMiddleware)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    app.include_router(auth_r.router)
+    app.include_router(location_r.router)
+    app.include_router(category_r.router)
+    app.include_router(user_r.router)
+    app.include_router(comment_r.router)
+    app.include_router(post_r.router)
+
+    return app
+
+
+app = create_app()

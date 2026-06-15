@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError # Импортируем для обр
 from src.infrastructure.postgres.database import SessionLocal
 from src.infrastructure.postgres.repositories.user_rep import UserRepository
 from src.infrastructure.postgres.models.user_m import User
-from src.config import settings
+from src.core.config import settings
 from src.auth.security import get_hash_password
 
 

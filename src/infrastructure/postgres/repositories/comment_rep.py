@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..models.comment_m import Comment
-from src.exceptions.database import (
+from src.domain.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,

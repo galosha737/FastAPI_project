@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.location_m import Location
-from src.exceptions.database import (
+from src.domain.exceptions.database import (
     DataConflictError,
     DatabaseError,
     DatabaseUnavailableError,
