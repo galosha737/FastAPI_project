@@ -1,5 +1,11 @@
+from pathlib import Path
+
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+IMAGES_DIR = PROJECT_ROOT / "images"
+STATIC_IMAGES_URL = "/static_images"
 
 
 class Settings(BaseSettings):

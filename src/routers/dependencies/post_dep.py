@@ -10,6 +10,8 @@ from src.use_cases.post.update_post import UpdatePostUseCase
 from src.use_cases.post.delete_post import DeletePostUseCase
 from src.use_cases.post.get_post import GetPostUseCase
 from src.use_cases.post.get_list_post import GetPostListUseCase
+from src.use_cases.file_use_case import FileUseCase
+from src.infrastructure.postgres.repositories.file_rep import FileRepository
 
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
@@ -21,6 +23,28 @@ def get_post_repository(session: DbSession) -> PostRepository:
 
 PostRepositoryDep = Annotated[PostRepository,
                               Depends(get_post_repository)]
+
+
+def get_file_repository(session: DbSession) -> FileRepository:
+    return FileRepository(session)
+
+
+FileRepositoryDep = Annotated[
+    FileRepository,
+    Depends(get_file_repository)
+]
+
+
+def get_file_use_case(
+    repository: FileRepositoryDep,
+) -> FileUseCase:
+    return FileUseCase(repository)
+
+
+FileUseCaseDep = Annotated[
+    FileUseCase,
+    Depends(get_file_use_case),
+]
 
 
 def get_post_list_use_case(
@@ -37,8 +61,9 @@ def get_post_use_case(
 
 def get_create_post_use_case(
     repository: PostRepositoryDep,
+    file_use_case: FileUseCaseDep
 ) -> CreatePostUseCase:
-    return CreatePostUseCase(repository)
+    return CreatePostUseCase(repository, file_use_case)
 
 
 def get_update_post_use_case(

@@ -10,6 +10,7 @@ from src.use_cases.comment.update_comment import UpdateCommentUseCase
 from src.use_cases.comment.delete_comment import DeleteCommentUseCase
 from src.use_cases.comment.get_comment import GetCommentUseCase
 from src.use_cases.comment.get_list_comments import GetCommentListUseCase
+from .post_dep import FileUseCaseDep
 
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
@@ -37,8 +38,9 @@ def get_comment_use_case(
 
 def get_create_comment_use_case(
     repository: CommentRepositoryDep,
+    file_use_case: FileUseCaseDep,
 ) -> CreateCommentUseCase:
-    return CreateCommentUseCase(repository)
+    return CreateCommentUseCase(repository, file_use_case)
 
 
 def get_update_comment_use_case(

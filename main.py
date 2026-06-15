@@ -1,8 +1,10 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 
-from src.routers import (category_r, comment_r, location_r, post_r, user_r, auth_r)
+from src.config import IMAGES_DIR, STATIC_IMAGES_URL
 from src.logging_config import setup_logging
+from src.routers import auth_r, category_r, comment_r, location_r, post_r, user_r
 from src.widdleware.log_middleware import LoggingMiddleware
 
 
@@ -10,6 +12,13 @@ def create_app() -> FastAPI:
     setup_logging()
 
     app = FastAPI()
+
+    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+    app.mount(
+        STATIC_IMAGES_URL,
+        StaticFiles(directory=str(IMAGES_DIR)),
+        name="static_images",
+    )
 
     app.add_middleware(LoggingMiddleware)
 

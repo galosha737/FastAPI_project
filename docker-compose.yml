@@ -50,7 +50,7 @@ services:
     volumes:
       - ./alembic:/app/alembic
       - ./src:/app/src
-      - ./images:/images
+      - ./images:/app/images
     ports:
       - "8000:8000"
     environment:

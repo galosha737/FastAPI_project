@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from starlette import status
 
 from src.infrastructure.postgres.models.user_m import User
@@ -52,11 +52,13 @@ async def get_comment(
 )
 async def create_comment(
     use_case: CreateCommentUseCaseDep,
-    comment_in: CommentCreate,
-    current_user: Annotated[User, Depends(get_current_user)]
-
+    current_user: Annotated[User, Depends(get_current_user)],
+    text: str = Form(...),
+    post_id: int = Form(...),
+    image: UploadFile | None = File(None),
 ):
-    return await use_case.execute(comment_in, current_user)
+    comment_in = CommentCreate(text=text, post_id=post_id)
+    return await use_case.execute(comment_in, image, current_user)
 
 
 @router.put(

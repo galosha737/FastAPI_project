@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Optional
 
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, StrictBool, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
+
+from .file import FileResponse
 
 
 class PostBase(BaseModel):
@@ -10,7 +12,6 @@ class PostBase(BaseModel):
     title: Annotated[str, Field(min_length=3, max_length=255)]
     text: Annotated[str, Field(min_length=1, max_length=10000)]
     is_published: StrictBool = False
-    image: AnyHttpUrl | None = None
     location_id: Annotated[int | None, Field(default=None, gt=0)]
     category_id: Annotated[int | None, Field(default=None, gt=0)]
 
@@ -34,7 +35,6 @@ class PostUpdate(BaseModel):
     title: Annotated[str | None, Field(default=None, min_length=3, max_length=255)]
     text: Annotated[str | None, Field(default=None, min_length=1, max_length=10000)]
     is_published: StrictBool | None = None
-    image: AnyHttpUrl | None = None
     location_id: Annotated[int | None, Field(default=None, gt=0)]
     category_id: Annotated[int | None, Field(default=None, gt=0)]
 
@@ -53,7 +53,7 @@ class PostOut(BaseModel):
     title: str
     text: str
     is_published: bool
-    image: str | None = None
+    image: "FileResponse | None" = None
     author_id: int
     location_id: int | None = None
     category_id: int | None = None

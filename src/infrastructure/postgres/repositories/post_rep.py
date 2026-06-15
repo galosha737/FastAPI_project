@@ -1,8 +1,10 @@
 from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
+from sqlalchemy.orm import selectinload
 
 from ..models.post_m import Post
+from ..models.comment_m import Comment
 from src.exceptions.database import (
     DataConflictError,
     DatabaseError,
@@ -17,8 +19,11 @@ class PostRepository:
 
     async def get_list(self, skip: int = 0, limit: int = 10) -> list[Post]:
         try:
-            s = select(Post).offset(skip).limit(limit)
-            result = await self.session.execute(s)
+            stmt = select(Post).options(
+                selectinload(Post.image),
+                selectinload(Post.comments).selectinload(Comment.image)
+            ).offset(skip).limit(limit)
+            result = await self.session.execute(stmt)
             return list(result.scalars().all())
         except OperationalError as err:
             raise DatabaseUnavailableError(
@@ -35,7 +40,9 @@ class PostRepository:
 
     async def get(self, post_id: int) -> Post | None:
         try:
-            return await self.session.get(Post, post_id)
+            stmt = select(Post).options(selectinload(Post.image)).where(Post.id == post_id)
+            result = await self.session.execute(stmt)
+            return result.scalar_one_or_none()
         except OperationalError as err:
             raise DatabaseUnavailableError(
                 entity="Post",
@@ -152,12 +159,18 @@ class PostRepository:
     
     async def get_list_for_user(self, user_id: int, skip: int = 0, limit: int = 10) -> list[Post]:
         try:
-            s = select(Post).where(
-                or_(
-                    Post.author_id == user_id,
-                    and_(Post.is_published, Post.author_id != user_id)
+            s = (
+                select(Post)
+                .options(selectinload(Post.image))
+                .where(
+                    or_(
+                        Post.author_id == user_id,
+                        and_(Post.is_published, Post.author_id != user_id)
+                    )
                 )
-            ).offset(skip).limit(limit)
+                .offset(skip)
+                .limit(limit)
+            )
             result = await self.session.execute(s)
             return list(result.scalars().all())
         except OperationalError as err:
@@ -175,12 +188,16 @@ class PostRepository:
 
     async def get_for_user(self, post_id: int, user_id: int) -> Post | None:
         try:
-            s = select(Post).where(
-                and_(
-                    Post.id == post_id,
-                    or_(
-                        Post.author_id == user_id,
-                        Post.is_published
+            s = (
+                select(Post)
+                .options(selectinload(Post.image))
+                .where(
+                    and_(
+                        Post.id == post_id,
+                        or_(
+                            Post.author_id == user_id,
+                            Post.is_published
+                        )
                     )
                 )
             )

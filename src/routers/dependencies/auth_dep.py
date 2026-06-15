@@ -8,7 +8,6 @@ from src.infrastructure.postgres.models.user_m import User
 from src.use_cases.auth.login import LoginUserUseCase
 from src.use_cases.auth.refresh import RefreshTokenUseCase
 from src.routers.dependencies.user_dep import UserRepositoryDep
-from src.schemas.token import TokenPayload
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 

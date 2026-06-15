@@ -11,18 +11,14 @@ from src.config import settings
 from src.infrastructure.postgres.database import Base
 
 try:
-    # Убедитесь, что пути соответствуют структуре внутри контейнера app
-    # и что PYTHONPATH позволяет их импортировать
-    from src.infrastructure.postgres.models.user_m import User # Или как у вас называется файл и класс
+    from src.infrastructure.postgres.models.user_m import User
     from src.infrastructure.postgres.models.post_m import Post
     from src.infrastructure.postgres.models.location_m import Location
     from src.infrastructure.postgres.models.category_m import Category
     from src.infrastructure.postgres.models.comment_m import Comment
-    # Импортируйте ВСЕ модели, которые должны участвовать в autogenerate
+    from src.infrastructure.postgres.models.file import File
 except ImportError as e:
     print(f"CRITICAL ERROR: Could not import model modules: {e}")
-    print("Check your PYTHONPATH and import paths in env.py!")
-    # Завершаем процесс с ошибкой, чтобы не продолжать с пустым metadata
     raise e
 
 CREATE_SCHEMA_QUERY = f"CREATE SCHEMA IF NOT EXISTS {settings.POSTGRES_SCHEMA};"

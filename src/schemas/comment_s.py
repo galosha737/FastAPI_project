@@ -3,6 +3,8 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from .file import FileResponse
+
 
 class CommentBase(BaseModel):
     model_config = ConfigDict(
@@ -48,5 +50,6 @@ class CommentOut(CommentCreate):
     id: int
     created_at: datetime
     author_id: int
+    image: FileResponse | None = None
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from ..models.comment_m import Comment
 from src.exceptions.database import (
@@ -17,7 +18,12 @@ class CommentRepository:
 
     async def get_list(self, skip: int = 0, limit: int = 10) -> list[Comment]:
         try:
-            s = select(Comment).offset(skip).limit(limit)
+            s = (
+                select(Comment)
+                .options(selectinload(Comment.image))
+                .offset(skip)
+                .limit(limit)
+            )
             result = await self.session.execute(s)
             return list(result.scalars().all())
         except OperationalError as err:
@@ -35,7 +41,13 @@ class CommentRepository:
         
     async def get(self, Comment_id: int) -> Comment | None:
         try:
-            return await self.session.get(Comment, Comment_id)
+            stmt = (
+                select(Comment)
+                .options(selectinload(Comment.image))
+                .where(Comment.id == Comment_id)
+            )
+            result = await self.session.execute(stmt)
+            return result.scalar_one_or_none()
         except OperationalError as err:
             raise DatabaseUnavailableError(
                 entity="Comment",

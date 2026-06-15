@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File, Form
 from starlette import status
 
 from src.infrastructure.postgres.models.user_m import User
@@ -53,11 +53,23 @@ async def get_post(
     summary="Создать пост:"
 )
 async def create_post(
-    use_case: CreatePostUseCaseDep,
-    post_in: PostCreate,
     current_user: Annotated[User, Depends(get_current_user)],
+    use_case: CreatePostUseCaseDep,
+    title: str = Form(...),
+    text: str = Form(...),
+    is_published: bool = Form(False),
+    category_id: int | None = Form(None),
+    location_id: int | None = Form(None),
+    image: UploadFile | None = File(None),
 ):
-    return await use_case.execute(post_in, current_user)
+    post_in = PostCreate(
+        title=title,
+        text=text,
+        is_published=is_published,
+        category_id=category_id,
+        location_id=location_id
+    )
+    return await use_case.execute(post_in, image, current_user)
 
 
 @router.put(
